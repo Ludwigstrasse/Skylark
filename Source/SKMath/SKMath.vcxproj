@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AF708BC9-6C62-4FBC-8DFD-51036DECBBC2}</ProjectGuid>
+    <RootNamespace>SKMath</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\Bin\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\Bin\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\SKCore\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SKMATH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>..\Bin\SKSystem_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\SKCore\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SKMATH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>..\Bin\SKSystem.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="SKAABB3.cpp" />
+    <ClCompile Include="SKAABB3Distance.cpp" />
+    <ClCompile Include="SKAABB3RelationWith.cpp" />
+    <ClCompile Include="SKB_SplineCurve3.cpp" />
+    <ClCompile Include="SKB_SplineSurface3.cpp" />
+    <ClCompile Include="SKBezierCurve3.cpp" />
+    <ClCompile Include="SKBezierSurface3.cpp" />
+    <ClCompile Include="SKControlCurve3.cpp" />
+    <ClCompile Include="SKControlSurface3.cpp" />
+    <ClCompile Include="SKCurve3.cpp" />
+    <ClCompile Include="SKCurve3SubdivisionByError.cpp" />
+    <ClCompile Include="SKCurve3SubdivisionByLength.cpp" />
+    <ClCompile Include="SKCurve3SubdivisionByUniform.cpp" />
+    <ClCompile Include="SKCurve3Subdivsion.cpp" />
+    <ClCompile Include="SKCurveLengthFunction1.cpp" />
+    <ClCompile Include="SKCurveSet3.cpp" />
+    <ClCompile Include="SKCylinder3.cpp" />
+    <ClCompile Include="SKCylinderSurface.cpp" />
+    <ClCompile Include="SKDiffEquation.cpp" />
+    <ClCompile Include="SKFastFunction.cpp" />
+    <ClCompile Include="SKFunction1.cpp" />
+    <ClCompile Include="SKGeneralizedCylinderSurface3.cpp" />
+    <ClCompile Include="SKLine3.cpp" />
+    <ClCompile Include="SKLine3Distance.cpp" />
+    <ClCompile Include="SKLine3RelationWith.cpp" />
+    <ClCompile Include="SKMath.cpp" />
+    <ClCompile Include="SKMatrix3X3.cpp" />
+    <ClCompile Include="SKMatrix3X3W.cpp" />
+    <ClCompile Include="SKNURBSCurve3.cpp" />
+    <ClCompile Include="SKNURBSSurface3.cpp" />
+    <ClCompile Include="SKOBB3.cpp" />
+    <ClCompile Include="SKOBB3Distance.cpp" />
+    <ClCompile Include="SKOBB3RelationWith.cpp" />
+    <ClCompile Include="SKOtherMath.cpp" />
+    <ClCompile Include="SKPlane3.cpp" />
+    <ClCompile Include="SKPlane3Distance.cpp" />
+    <ClCompile Include="SKPlane3RelationWith.cpp" />
+    <ClCompile Include="SKPolygon3.cpp" />
+    <ClCompile Include="SKPolygon3Clip.cpp" />
+    <ClCompile Include="SKPolygon3Distance.cpp" />
+    <ClCompile Include="SKPolygon3RelationWith.cpp" />
+    <ClCompile Include="SKQuat.cpp" />
+    <ClCompile Include="SKRay3.cpp" />
+    <ClCompile Include="SKRay3Distance.cpp" />
+    <ClCompile Include="SKRay3RelationWith.cpp" />
+    <ClCompile Include="SKRect2.cpp" />
+    <ClCompile Include="SKRectangle3.cpp" />
+    <ClCompile Include="SKRectangle3Distance.cpp" />
+    <ClCompile Include="SKRectangle3RelationWith.cpp" />
+    <ClCompile Include="SKRevolutionSurface3.cpp" />
+    <ClCompile Include="SKSegment3.cpp" />
+    <ClCompile Include="SKSegment3Distance.cpp" />
+    <ClCompile Include="SKSegment3RelationWith.cpp" />
+    <ClCompile Include="SKSegmentCurve3.cpp" />
+    <ClCompile Include="SKSphere3.cpp" />
+    <ClCompile Include="SKSphere3Distance.cpp" />
+    <ClCompile Include="SKSphere3RelationWith.cpp" />
+    <ClCompile Include="SKSurface3.cpp" />
+    <ClCompile Include="SKSurface3Subdivision.cpp" />
+    <ClCompile Include="SKSurface3SubdivisionByLength.cpp" />
+    <ClCompile Include="SKSurface3SubdivisionByUniform.cpp" />
+    <ClCompile Include="SKSurfaceLengthFunction1.cpp" />
+    <ClCompile Include="SKTriangle3.cpp" />
+    <ClCompile Include="SKTriangle3Distance.cpp" />
+    <ClCompile Include="SKTriangle3RelationWith.cpp" />
+    <ClCompile Include="SKTubeSurface3.cpp" />
+    <ClCompile Include="SKVector2.cpp" />
+    <ClCompile Include="SKVector3.cpp" />
+    <ClCompile Include="SKVector3Distance.cpp" />
+    <ClCompile Include="SKVector3RelationWith.cpp" />
+    <ClCompile Include="SKVector3W.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SKFunction1.inl" />
+    <None Include="SKAABB3.inl" />
+    <None Include="SKB_SplineCurve3.inl" />
+    <None Include="SKB_SplineSurface3.inl" />
+    <None Include="SKBezierCurve3.inl" />
+    <None Include="SKBezierSurface3.inl" />
+    <None Include="SKControlCurve3.inl" />
+    <None Include="SKControlSurface3.inl" />
+    <None Include="SKCurve3Subdivision.inl" />
+    <None Include="SKLine3.inl" />
+    <None Include="SKMatrix3X3.inl" />
+    <None Include="SKMatrix3X3W.inl" />
+    <None Include="SKNURBSCurve3.inl" />
+    <None Include="SKNURBSSurface3.inl" />
+    <None Include="SKOBB3.inl" />
+    <None Include="SKPlane3.inl" />
+    <None Include="SKPolygon3.inl" />
+    <None Include="SKRay3.inl" />
+    <None Include="SKRectangle3.inl" />
+    <None Include="SKSegment3.inl" />
+    <None Include="SKSegmentCurve3.inl" />
+    <None Include="SKSphere3.inl" />
+    <None Include="SKSurface3.inl" />
+    <None Include="SKSurface3Subdivision.inl" />
+    <None Include="SKTriangle3.inl" />
+    <None Include="SKVector2.inl" />
+    <None Include="SKVector3.inl" />
+    <None Include="SKVector3W.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SKAABB3.h" />
+    <ClInclude Include="SKB_SplineCurve3.h" />
+    <ClInclude Include="SKB_SplineSurface3.h" />
+    <ClInclude Include="SKBezierCurve3.h" />
+    <ClInclude Include="SKBezierSurface3.h" />
+    <ClInclude Include="SKControlCurve3.h" />
+    <ClInclude Include="SKControlSurface3.h" />
+    <ClInclude Include="SKCurve3.h" />
+    <ClInclude Include="SKCurve3Subdivision.h" />
+    <ClInclude Include="SKCurve3SubdivisionByError.h" />
+    <ClInclude Include="SKCurve3SubdivisionByLength.h" />
+    <ClInclude Include="SKCurve3SubdivisionByUniform.h" />
+    <ClInclude Include="SKCurveLengthFunction1.h" />
+    <ClInclude Include="SKCurveSet3.h" />
+    <ClInclude Include="SKCylinder3.h" />
+    <ClInclude Include="SKCylinderSurface3.h" />
+    <ClInclude Include="SKDiffEquation.h" />
+    <ClInclude Include="SKFastFunction.h" />
+    <ClInclude Include="SKFunction1.h" />
+    <ClInclude Include="SKGeneralizedCylinderSurface3.h" />
+    <ClInclude Include="SKLine3.h" />
+    <ClInclude Include="SKMath.h" />
+    <ClInclude Include="SKMatrix3X3.h" />
+    <ClInclude Include="SKMatrix3X3W.h" />
+    <ClInclude Include="SKNURBSCurve3.h" />
+    <ClInclude Include="SKNURBSSurface3.h" />
+    <ClInclude Include="SKOBB3.h" />
+    <ClInclude Include="SKOtherMath.h" />
+    <ClInclude Include="SKPlane3.h" />
+    <ClInclude Include="SKPolygon3.h" />
+    <ClInclude Include="SKQuat.h" />
+    <ClInclude Include="SKRay3.h" />
+    <ClInclude Include="SKRect2.h" />
+    <ClInclude Include="SKRectangle3.h" />
+    <ClInclude Include="SKRevolutionSurface3.h" />
+    <ClInclude Include="SKSegment3.h" />
+    <ClInclude Include="SKSegmentCurve3.h" />
+    <ClInclude Include="SKSphere3.h" />
+    <ClInclude Include="SKSurface3.h" />
+    <ClInclude Include="SKSurface3Subdivision.h" />
+    <ClInclude Include="SKSurface3SubdivisionByLength.h" />
+    <ClInclude Include="SKSurface3SubdivisionByUniform.h" />
+    <ClInclude Include="SKSurfaceLengthFunction1.h" />
+    <ClInclude Include="SKTriangle3.h" />
+    <ClInclude Include="SKTubeSurface3.h" />
+    <ClInclude Include="SKVector2.h" />
+    <ClInclude Include="SKVector3.h" />
+    <ClInclude Include="SKVector3W.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SKCore\SKSystem.vcxproj">
+      <Project>{ee45b131-9f26-42aa-b238-3e3663cf3ea8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

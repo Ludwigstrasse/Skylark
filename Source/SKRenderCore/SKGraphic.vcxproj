@@ -1,0 +1,515 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{829D848B-E7F3-47AB-B303-CAE1681DC9EA}</ProjectGuid>
+    <RootNamespace>SKGraphic</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\Bin\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\Bin\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\SKCore\;..\SKCore\;..\SKMath\;..\SKContainers\;..\SDK\NVCompress\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SKGRAPHIC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <PrecompiledHeaderFile />
+      <PrecompiledHeaderOutputFile />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>..\Bin\SKSystem_d.lib;..\Bin\SKMath_d.lib;..\Bin\SKDataStruct_d.lib;..\SDK\NVCompress\Lib\SKnvtt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\SKCore\;..\SKMath\;..\SKContainers\;..\SDK\NVCompress\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SKGRAPHIC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>..\Bin\SKSystem.lib;..\Bin\SKMath.lib;..\Bin\SKDataStruct.lib;..\SDK\NVCompress\Lib\SKnvtt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="SKAdditiveBlend.cpp" />
+    <ClCompile Include="SKASYNLoader.cpp" />
+    <ClCompile Include="SKColorBuffer.cpp" />
+    <ClCompile Include="SKController.cpp" />
+    <ClCompile Include="SKCustomArchiveObject.cpp" />
+    <ClCompile Include="SKDShader.cpp" />
+    <ClCompile Include="SKEnumTrans.cpp" />
+    <ClCompile Include="SKGraphic.cpp" />
+    <ClCompile Include="SKGShader.cpp" />
+    <ClCompile Include="SKHShader.cpp" />
+    <ClCompile Include="SKMain.cpp" />
+    <ClCompile Include="SKMeshComponent.cpp" />
+    <ClCompile Include="SKMonitor.cpp" />
+    <ClCompile Include="SKMorphBlendFunction.cpp" />
+    <ClCompile Include="SKName.cpp" />
+    <ClCompile Include="SKNodeComponent.cpp" />
+    <ClCompile Include="SKNullRenderer.cpp" />
+    <ClCompile Include="SKNVCompression.cpp" />
+    <ClCompile Include="SKObject.cpp" />
+    <ClCompile Include="SKOneParamImmediateAnimBlend.cpp" />
+    <ClCompile Include="SKOneParamMorphBlend.cpp" />
+    <ClCompile Include="SKOneParamSmoothAnimBlend.cpp" />
+    <ClCompile Include="SKOneParamSmoothAnimBlendSequence.cpp" />
+    <ClCompile Include="SKOneParamSmoothMorphBlend.cpp" />
+    <ClCompile Include="SKPEMaterial.cpp" />
+    <ClCompile Include="SKPostEffectPass.cpp" />
+    <ClCompile Include="SKPostEffectShaderFunction.cpp" />
+    <ClCompile Include="SKPriority.cpp" />
+    <ClCompile Include="SKProfiler.cpp" />
+    <ClCompile Include="SKPutNode.cpp" />
+    <ClCompile Include="SKReference.cpp" />
+    <ClCompile Include="SKReflectCameraActor.cpp" />
+    <ClCompile Include="SKResource.cpp" />
+    <ClCompile Include="SKResourceManager.cpp" />
+    <ClCompile Include="SKRtti.cpp" />
+    <ClCompile Include="SKSkelectonMeshComponent.cpp" />
+    <ClCompile Include="SKSocketNode.cpp" />
+    <ClCompile Include="SKStaticMeshComponent.cpp" />
+    <ClCompile Include="SKStream.cpp" />
+    <ClCompile Include="SKTexCoord.cpp" />
+    <ClCompile Include="SKTimeEvent.cpp" />
+    <ClCompile Include="SKTransform.cpp" />
+    <ClCompile Include="SKTwoParamAnimBlendSequence.cpp" />
+    <ClCompile Include="SKUseBuffer.cpp" />
+    <ClCompile Include="SKVariant.cpp" />
+    <ClCompile Include="SK1DTexSampler.cpp" />
+    <ClCompile Include="SK2DTexSampler.cpp" />
+    <ClCompile Include="SKAnisotropicWardShaderFunction.cpp" />
+    <ClCompile Include="SKArithmeticShaderFunction.cpp" />
+    <ClCompile Include="SKCameraShaderFunction.cpp" />
+    <ClCompile Include="SKConstFloatValue.cpp" />
+    <ClCompile Include="SKConstValue.cpp" />
+    <ClCompile Include="SKCookTorranceShaderFunction.cpp" />
+    <ClCompile Include="SKCustomShaderFunction.cpp" />
+    <ClCompile Include="SKIsotropicWardShaderFunction.cpp" />
+    <ClCompile Include="SKLightShaderFunction.cpp" />
+    <ClCompile Include="SKMaterial.cpp" />
+    <ClCompile Include="SKMinnaertShaderFunction.cpp" />
+    <ClCompile Include="SKNormalFunction.cpp" />
+    <ClCompile Include="SKOrenNayarShaderFunction.cpp" />
+    <ClCompile Include="SKPhoneShaderFunction.cpp" />
+    <ClCompile Include="SKPosShaderFunction.cpp" />
+    <ClCompile Include="SKSchlickShaderFunction.cpp" />
+    <ClCompile Include="SKShaderFunction.cpp" />
+    <ClCompile Include="SKShaderMainFunction.cpp" />
+    <ClCompile Include="SKShirleyShaderFunction.cpp" />
+    <ClCompile Include="SKStraussShaderFunction.cpp" />
+    <ClCompile Include="SKTexSampler.cpp" />
+    <ClCompile Include="SKVertexColor.cpp" />
+    <ClCompile Include="SK1DTexture.cpp" />
+    <ClCompile Include="SK2DTexture.cpp" />
+    <ClCompile Include="SK3DTexture.cpp" />
+    <ClCompile Include="SKCaptureTexAllState.cpp" />
+    <ClCompile Include="SKCubeTexture.cpp" />
+    <ClCompile Include="SKTexAllState.cpp" />
+    <ClCompile Include="SKTexture.cpp" />
+    <ClCompile Include="SKAnimAtom.cpp" />
+    <ClCompile Include="SKAnimBaseFunction.cpp" />
+    <ClCompile Include="SKAnimBlendFunction.cpp" />
+    <ClCompile Include="SKAnimFunction.cpp" />
+    <ClCompile Include="SKAnimMainFunction.cpp" />
+    <ClCompile Include="SKAnimSequenceFunc.cpp" />
+    <ClCompile Include="SKAnimSet.cpp" />
+    <ClCompile Include="SKAnimTree.cpp" />
+    <ClCompile Include="SKMorphBaseFunction.cpp" />
+    <ClCompile Include="SKMorphFunction.cpp" />
+    <ClCompile Include="SKMorphMainFunction.cpp" />
+    <ClCompile Include="SKMorphSequenceFunc.cpp" />
+    <ClCompile Include="SKMorphSet.cpp" />
+    <ClCompile Include="SKMorphTree.cpp" />
+    <ClCompile Include="SKOneParamAnimBlend.cpp" />
+    <ClCompile Include="SKPartialAnimBlend.cpp" />
+    <ClCompile Include="SKRectAnimBlend.cpp" />
+    <ClCompile Include="SKTwoParamAnimBlend.cpp" />
+    <ClCompile Include="SKPShader.cpp" />
+    <ClCompile Include="SKShader.cpp" />
+    <ClCompile Include="SKShaderKey.cpp" />
+    <ClCompile Include="SKShaderMap.cpp" />
+    <ClCompile Include="SKShaderStringFactory.cpp" />
+    <ClCompile Include="SKUserConstant.cpp" />
+    <ClCompile Include="SKUserSampler.cpp" />
+    <ClCompile Include="SKVShader.cpp" />
+    <ClCompile Include="SKPEBeginFunction.cpp" />
+    <ClCompile Include="SKPEEndFunction.cpp" />
+    <ClCompile Include="SKPEGray.cpp" />
+    <ClCompile Include="SKPostEffectFunction.cpp" />
+    <ClCompile Include="SKPostEffectSet.cpp" />
+    <ClCompile Include="SKBind.cpp" />
+    <ClCompile Include="SKCuller.cpp" />
+    <ClCompile Include="SKDebugDraw.cpp" />
+    <ClCompile Include="SKDepthStencil.cpp" />
+    <ClCompile Include="SKFont.cpp" />
+    <ClCompile Include="SKRenderer.cpp" />
+    <ClCompile Include="SKRenderTarget.cpp" />
+    <ClCompile Include="SKScene.cpp" />
+    <ClCompile Include="SKSceneManager.cpp" />
+    <ClCompile Include="SKSceneRender.cpp" />
+    <ClCompile Include="SKViewFamily.cpp" />
+    <ClCompile Include="SK1stCameraController.cpp" />
+    <ClCompile Include="SKCamera.cpp" />
+    <ClCompile Include="SKFreeCameraController.cpp" />
+    <ClCompile Include="SKBoneNode.cpp" />
+    <ClCompile Include="SKCLodTerrainNode.cpp" />
+    <ClCompile Include="SKDLodTerrainNode.cpp" />
+    <ClCompile Include="SKDLodTerrainSwitchNode.cpp" />
+    <ClCompile Include="SKGeometryNode.cpp" />
+    <ClCompile Include="SKMeshNode.cpp" />
+    <ClCompile Include="SKModelMeshNode.cpp" />
+    <ClCompile Include="SKModelSwitchNode.cpp" />
+    <ClCompile Include="SKNode.cpp" />
+    <ClCompile Include="SKSkelecton.cpp" />
+    <ClCompile Include="SKSkelectonMeshNode.cpp" />
+    <ClCompile Include="SKSpatial.cpp" />
+    <ClCompile Include="SKStaticMeshNode.cpp" />
+    <ClCompile Include="SKSwitchNode.cpp" />
+    <ClCompile Include="SKTerrainNode.cpp" />
+    <ClCompile Include="SKCLodTerrainGeometry.cpp" />
+    <ClCompile Include="SKCollapseRecord.cpp" />
+    <ClCompile Include="SKCreateClodFactory.cpp" />
+    <ClCompile Include="SKDLodTerrainGeometry.cpp" />
+    <ClCompile Include="SKDynamicBufferGeometry.cpp" />
+    <ClCompile Include="SKGeometry.cpp" />
+    <ClCompile Include="SKQuadTerrainGeometry.cpp" />
+    <ClCompile Include="SKRoamTerrainGemotry.cpp" />
+    <ClCompile Include="SKDataBuffer.cpp" />
+    <ClCompile Include="SKIndexBuffer.cpp" />
+    <ClCompile Include="SKLineSet.cpp" />
+    <ClCompile Include="SKMeshDate.cpp" />
+    <ClCompile Include="SKOrdinaryLineSet.cpp" />
+    <ClCompile Include="SKOrdinaryTriangleSet.cpp" />
+    <ClCompile Include="SKPointSet.cpp" />
+    <ClCompile Include="SKTriangleSet.cpp" />
+    <ClCompile Include="SKVertexBuffer.cpp" />
+    <ClCompile Include="SKVertexFormat.cpp" />
+    <ClCompile Include="SKDirectionLight.cpp" />
+    <ClCompile Include="SKLight.cpp" />
+    <ClCompile Include="SKPointLight.cpp" />
+    <ClCompile Include="SKSkyLight.cpp" />
+    <ClCompile Include="SKSpotLight.cpp" />
+    <ClCompile Include="SKBlendState.cpp" />
+    <ClCompile Include="SKDepthStencilState.cpp" />
+    <ClCompile Include="SKRasterizerState.cpp" />
+    <ClCompile Include="SKRenderState.cpp" />
+    <ClCompile Include="SKSamplerState.cpp" />
+    <ClCompile Include="SKIndirectRenderPass.cpp" />
+    <ClCompile Include="SKLightFunPass.cpp" />
+    <ClCompile Include="SKMaterialPass.cpp" />
+    <ClCompile Include="SKNormalDepthPass.cpp" />
+    <ClCompile Include="SKPass.cpp" />
+    <ClCompile Include="SKPrezPass.cpp" />
+    <ClCompile Include="SKShadowPass.cpp" />
+    <ClCompile Include="SKActor.cpp" />
+    <ClCompile Include="SKCameraActor.cpp" />
+    <ClCompile Include="SKLightActor.cpp" />
+    <ClCompile Include="SKSceneMap.cpp" />
+    <ClCompile Include="SKSkelectonActor.cpp" />
+    <ClCompile Include="SKStaticActor.cpp" />
+    <ClCompile Include="SKTerrainActor.cpp" />
+    <ClCompile Include="SKWorld.cpp" />
+    <ClCompile Include="SKAIState.cpp" />
+    <ClCompile Include="SKSteer.cpp" />
+    <ClCompile Include="SKEngineThread.cpp" />
+    <ClCompile Include="SKRenderThread.cpp" />
+    <ClCompile Include="SKUpdateThread.cpp" />
+    <ClCompile Include="SKEditorProperty.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SKAdditiveBlend.h" />
+    <ClInclude Include="SKColorBuffer.h" />
+    <ClInclude Include="SKDShader.h" />
+    <ClInclude Include="SKGShader.h" />
+    <ClInclude Include="SKHShader.h" />
+    <ClInclude Include="SKMorphBlendFunction.h" />
+    <ClInclude Include="SKNullRenderer.h" />
+    <ClInclude Include="SKASYNLoader.h" />
+    <ClInclude Include="SKController.h" />
+    <ClInclude Include="SKCustomArchiveObject.h" />
+    <ClInclude Include="SKEnumTrans.h" />
+    <ClInclude Include="SKGraphic.h" />
+    <ClInclude Include="SKGraphicInclude.h" />
+    <ClInclude Include="SKLogic.h" />
+    <ClInclude Include="SKMain.h" />
+    <ClInclude Include="SKMeshComponent.h" />
+    <ClInclude Include="SKMonitor.h" />
+    <ClInclude Include="SKName.h" />
+    <ClInclude Include="SKNodeComponent.h" />
+    <ClInclude Include="SKNVCompression.h" />
+    <ClInclude Include="SKObject.h" />
+    <ClInclude Include="SKOneParamImmediateAnimBlend.h" />
+    <ClInclude Include="SKOneParamMorphBlend.h" />
+    <ClInclude Include="SKOneParamSmoothAnimBlend.h" />
+    <ClInclude Include="SKOneParamSmoothAnimBlendSequence.h" />
+    <ClInclude Include="SKOneParamSmoothMorphBlend.h" />
+    <ClInclude Include="SKPointer.h" />
+    <ClInclude Include="SKPostEffectPass.h" />
+    <ClInclude Include="SKPostEffectShaderFunction.h" />
+    <ClInclude Include="SKPriority.h" />
+    <ClInclude Include="SKProfiler.h" />
+    <ClInclude Include="SKProperty.h" />
+    <ClInclude Include="SKPutNode.h" />
+    <ClInclude Include="SKReference.h" />
+    <ClInclude Include="SKReflectCameraActor.h" />
+    <ClInclude Include="SKResource.h" />
+    <ClInclude Include="SKResourceManager.h" />
+    <ClInclude Include="SKRtti.h" />
+    <ClInclude Include="SKSkelectonMeshComponent.h" />
+    <ClInclude Include="SKSocketNode.h" />
+    <ClInclude Include="SKStaticMeshComponent.h" />
+    <ClInclude Include="SKStream.h" />
+    <ClInclude Include="SKTexCoord.h" />
+    <ClInclude Include="SKTimeEvent.h" />
+    <ClInclude Include="SKTransform.h" />
+    <ClInclude Include="SKTwoParamAnimBlendSequence.h" />
+    <ClInclude Include="SKType.h" />
+    <ClInclude Include="SKUseBuffer.h" />
+    <ClInclude Include="SKVariant.h" />
+    <ClInclude Include="SK1DTexSampler.h" />
+    <ClInclude Include="SK2DTexSampler.h" />
+    <ClInclude Include="SKAnisotropicWardShaderFunction.h" />
+    <ClInclude Include="SKArithmeticShaderFunction.h" />
+    <ClInclude Include="SKCameraShaderFunction.h" />
+    <ClInclude Include="SKConstFloatValue.h" />
+    <ClInclude Include="SKConstValue.h" />
+    <ClInclude Include="SKCookTorranceShaderFunction.h" />
+    <ClInclude Include="SKCustomShaderFunction.h" />
+    <ClInclude Include="SKIsotropicWardShaderFunction.h" />
+    <ClInclude Include="SKLightShaderFunction.h" />
+    <ClInclude Include="SKMaterial.h" />
+    <ClInclude Include="SKMinnaertShaderFunction.h" />
+    <ClInclude Include="SKNormalFunction.h" />
+    <ClInclude Include="SKOrenNayarShaderFunction.h" />
+    <ClInclude Include="SKPhoneShaderFunction.h" />
+    <ClInclude Include="SKPosShaderFunction.h" />
+    <ClInclude Include="SKSchlickShaderFunction.h" />
+    <ClInclude Include="SKShaderFunction.h" />
+    <ClInclude Include="SKShaderMainFunction.h" />
+    <ClInclude Include="SKShirleyShaderFunction.h" />
+    <ClInclude Include="SKStraussShaderFunction.h" />
+    <ClInclude Include="SKTexSampler.h" />
+    <ClInclude Include="SKVertexColor.h" />
+    <ClInclude Include="SK1DTexture.h" />
+    <ClInclude Include="SK2DTexture.h" />
+    <ClInclude Include="SK3DTexture.h" />
+    <ClInclude Include="SKCaptureTexAllState.h" />
+    <ClInclude Include="SKCubeTexture.h" />
+    <ClInclude Include="SKTexAllState.h" />
+    <ClInclude Include="SKTexture.h" />
+    <ClInclude Include="SKAnimAtom.h" />
+    <ClInclude Include="SKAnimBaseFunction.h" />
+    <ClInclude Include="SKAnimBlendFunction.h" />
+    <ClInclude Include="SKAnimFunction.h" />
+    <ClInclude Include="SKAnimMainFunction.h" />
+    <ClInclude Include="SKAnimSequenceFunc.h" />
+    <ClInclude Include="SKAnimSet.h" />
+    <ClInclude Include="SKAnimTree.h" />
+    <ClInclude Include="SKMorphBaseFunction.h" />
+    <ClInclude Include="SKMorphFunction.h" />
+    <ClInclude Include="SKMorphMainFunction.h" />
+    <ClInclude Include="SKMorphSequenceFunc.h" />
+    <ClInclude Include="SKMorphSet.h" />
+    <ClInclude Include="SKMorphTree.h" />
+    <ClInclude Include="SKOneParamAnimBlend.h" />
+    <ClInclude Include="SKPartialAnimBlend.h" />
+    <ClInclude Include="SKRectAnimBlend.h" />
+    <ClInclude Include="SKTwoParamAnimBlend.h" />
+    <ClInclude Include="SKPShader.h" />
+    <ClInclude Include="SKShader.h" />
+    <ClInclude Include="SKShaderKey.h" />
+    <ClInclude Include="SKShaderMap.h" />
+    <ClInclude Include="SKShaderStringFactory.h" />
+    <ClInclude Include="SKUserConstant.h" />
+    <ClInclude Include="SKUserSampler.h" />
+    <ClInclude Include="SKVShader.h" />
+    <ClInclude Include="SKPEBeginFunction.h" />
+    <ClInclude Include="SKPEBlur.h" />
+    <ClInclude Include="SKPEEndFunction.h" />
+    <ClInclude Include="SKPEGray.h" />
+    <ClInclude Include="SKPEMaterial.h" />
+    <ClInclude Include="SKPostEffectFunction.h" />
+    <ClInclude Include="SKPostEffectSet.h" />
+    <ClInclude Include="SKBind.h" />
+    <ClInclude Include="SKCuller.h" />
+    <ClInclude Include="SKDebugDraw.h" />
+    <ClInclude Include="SKDepthStencil.h" />
+    <ClInclude Include="SKFont.h" />
+    <ClInclude Include="SKRenderer.h" />
+    <ClInclude Include="SKRenderTarget.h" />
+    <ClInclude Include="SKScene.h" />
+    <ClInclude Include="SKSceneManager.h" />
+    <ClInclude Include="SKSceneRender.h" />
+    <ClInclude Include="SKViewFamily.h" />
+    <ClInclude Include="SK1stCameraController.h" />
+    <ClInclude Include="SKCamera.h" />
+    <ClInclude Include="SKFreeCameraController.h" />
+    <ClInclude Include="SKBoneNode.h" />
+    <ClInclude Include="SKCLodTerrainNode.h" />
+    <ClInclude Include="SKDLodTerrainNode.h" />
+    <ClInclude Include="SKDLodTerrainSwitchNode.h" />
+    <ClInclude Include="SKGeometryNode.h" />
+    <ClInclude Include="SKMeshNode.h" />
+    <ClInclude Include="SKModelMeshNode.h" />
+    <ClInclude Include="SKModelSwitchNode.h" />
+    <ClInclude Include="SKNode.h" />
+    <ClInclude Include="SKSkelecton.h" />
+    <ClInclude Include="SKSkelectonMeshNode.h" />
+    <ClInclude Include="SKSpatial.h" />
+    <ClInclude Include="SKStaticMeshNode.h" />
+    <ClInclude Include="SKSwitchNode.h" />
+    <ClInclude Include="SKTerrainNode.h" />
+    <ClInclude Include="SKCLodTerrainGeometry.h" />
+    <ClInclude Include="SKCollapseRecord.h" />
+    <ClInclude Include="SKCreateClodFactory.h" />
+    <ClInclude Include="SKDLodTerrainGeometry.h" />
+    <ClInclude Include="SKDynamicBufferGeometry.h" />
+    <ClInclude Include="SKGeometry.h" />
+    <ClInclude Include="SKQuadTerrainGeometry.h" />
+    <ClInclude Include="SKRoamTerrainGemotry.h" />
+    <ClInclude Include="SKDataBuffer.h" />
+    <ClInclude Include="SKIndexBuffer.h" />
+    <ClInclude Include="SKLineSet.h" />
+    <ClInclude Include="SKMeshDate.h" />
+    <ClInclude Include="SKOrdinaryLineSet.h" />
+    <ClInclude Include="SKOrdinaryTriangleSet.h" />
+    <ClInclude Include="SKPointSet.h" />
+    <ClInclude Include="SKTriangleSet.h" />
+    <ClInclude Include="SKVertexBuffer.h" />
+    <ClInclude Include="SKVertexFormat.h" />
+    <ClInclude Include="SKDirectionLight.h" />
+    <ClInclude Include="SKLight.h" />
+    <ClInclude Include="SKPointLight.h" />
+    <ClInclude Include="SKSkyLight.h" />
+    <ClInclude Include="SKSortLight.h" />
+    <ClInclude Include="SKSpotLight.h" />
+    <ClInclude Include="SKBlendState.h" />
+    <ClInclude Include="SKDepthStencilState.h" />
+    <ClInclude Include="SKRasterizerState.h" />
+    <ClInclude Include="SKRenderState.h" />
+    <ClInclude Include="SKSamplerState.h" />
+    <ClInclude Include="SKIndirectRenderPass.h" />
+    <ClInclude Include="SKLightFunPass.h" />
+    <ClInclude Include="SKMaterialPass.h" />
+    <ClInclude Include="SKNormalDepthPass.h" />
+    <ClInclude Include="SKPass.h" />
+    <ClInclude Include="SKPrezPass.h" />
+    <ClInclude Include="SKShadowPass.h" />
+    <ClInclude Include="SKActor.h" />
+    <ClInclude Include="SKCameraActor.h" />
+    <ClInclude Include="SKLightActor.h" />
+    <ClInclude Include="SKSceneMap.h" />
+    <ClInclude Include="SKSkelectonActor.h" />
+    <ClInclude Include="SKStaticActor.h" />
+    <ClInclude Include="SKTerrainActor.h" />
+    <ClInclude Include="SKWorld.h" />
+    <ClInclude Include="SKAIState.h" />
+    <ClInclude Include="SKSteer.h" />
+    <ClInclude Include="SKEngineThread.h" />
+    <ClInclude Include="SKRenderThread.h" />
+    <ClInclude Include="SKUpdateThread.h" />
+    <ClInclude Include="SKEditorProperty.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SKController.inl" />
+    <None Include="SKInitial.marc" />
+    <None Include="SKPointer.inl" />
+    <None Include="SKPriority.marc" />
+    <None Include="SKProperty.marc" />
+    <None Include="SKRtti.inl" />
+    <None Include="SKRtti.marc" />
+    <None Include="SKTransform.inl" />
+    <None Include="SKTexture.inl" />
+    <None Include="SKUserConstant.inl" />
+    <None Include="SKCuller.inl" />
+    <None Include="SKRenderer.inl" />
+    <None Include="SKCamera.inl" />
+    <None Include="SKNode.inl" />
+    <None Include="SKMeshDate.inl" />
+    <None Include="SKVertexBuffer.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SKContainers\SKDataStruct.vcxproj">
+      <Project>{2b36903f-5834-494f-afb8-7808e42f7412}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\SKMath\SKMath.vcxproj">
+      <Project>{af708bc9-6c62-4fbc-8dfd-51036decbbc2}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\SKCore\SKSystem.vcxproj">
+      <Project>{ee45b131-9f26-42aa-b238-3e3663cf3ea8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

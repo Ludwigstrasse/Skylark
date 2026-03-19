@@ -1,0 +1,1268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SK1DTexSampler.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SK2DTexSampler.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAIState.cpp">
+      <Filter>World\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimAtom.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimBaseFunction.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimBlendFunction.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimFunction.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimMainFunction.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimSequenceFunc.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimSet.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnimTree.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCameraShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKArithmeticShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAnisotropicWardShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKBind.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCameraActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKASYNLoader.cpp">
+      <Filter>Asyn</Filter>
+    </ClCompile>
+    <ClCompile Include="SK1stCameraController.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="SKController.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="SKConstFloatValue.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKConstValue.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCookTorranceShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCustomShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDebugDraw.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCustomArchiveObject.cpp">
+      <Filter>Core\Stream</Filter>
+    </ClCompile>
+    <ClCompile Include="SKEngineThread.cpp">
+      <Filter>Asyn</Filter>
+    </ClCompile>
+    <ClCompile Include="SKEditorProperty.cpp">
+      <Filter>Core\Stream</Filter>
+    </ClCompile>
+    <ClCompile Include="SKEnumTrans.cpp">
+      <Filter>Core\Stream</Filter>
+    </ClCompile>
+    <ClCompile Include="SKFreeCameraController.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="SKGeometry.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKGeometryNode.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKIsotropicWardShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKLightActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKLightShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKLightFunPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKIndirectRenderPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMeshNode.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMinnaertShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMaterialPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphBaseFunction.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphFunction.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphMainFunction.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphSequenceFunc.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphSet.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphTree.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNormalDepthPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMonitor.cpp">
+      <Filter>Asyn</Filter>
+    </ClCompile>
+    <ClCompile Include="SKName.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNode.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNormalFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOrenNayarShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPartialAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPEEndFunction.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPEBeginFunction.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMain.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPEGray.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPhoneShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPosShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPostEffectFunction.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPostEffectSet.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPrezPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPutNode.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SKResource.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKReference.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPriority.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRtti.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRectAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRenderThread.cpp">
+      <Filter>Asyn</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSchlickShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShirleyShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShadowPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKResourceManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNVCompression.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShaderMainFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMaterial.cpp">
+      <Filter>Matreial</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShaderStringFactory.cpp">
+      <Filter>Matreial</Filter>
+    </ClCompile>
+    <ClCompile Include="SKStaticActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSwitchNode.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTexSampler.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTransform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKStraussShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKStream.cpp">
+      <Filter>Core\Stream</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTerrainActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTimeEvent.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSteer.cpp">
+      <Filter>World\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="SKUpdateThread.cpp">
+      <Filter>Asyn</Filter>
+    </ClCompile>
+    <ClCompile Include="SKVertexColor.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTwoParamAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKVariant.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKWorld.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="SK1DTexture.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SK2DTexture.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SK3DTexture.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCubeTexture.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SKLight.cpp">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPointLight.cpp">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDirectionLight.cpp">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDepthStencilState.cpp">
+      <Filter>Render\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="SKBlendState.cpp">
+      <Filter>Render\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRasterizerState.cpp">
+      <Filter>Render\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRenderState.cpp">
+      <Filter>Render\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSamplerState.cpp">
+      <Filter>Render\RenderState</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSkyLight.cpp">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSpotLight.cpp">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTexAllState.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTexture.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SKVertexBuffer.cpp">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClCompile>
+    <ClCompile Include="SKVertexFormat.cpp">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClCompile>
+    <ClCompile Include="SKIndexBuffer.cpp">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCaptureTexAllState.cpp">
+      <Filter>Render\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDataBuffer.cpp">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClCompile>
+    <ClCompile Include="SKUserConstant.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShaderKey.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKShaderMap.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKVShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKUserSampler.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRenderTarget.cpp">
+      <Filter>Render\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDepthStencil.cpp">
+      <Filter>Render\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSceneMap.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCuller.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKScene.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSceneManager.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSpatial.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKViewFamily.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSceneRender.cpp">
+      <Filter>Render\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SKFont.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCLodTerrainGeometry.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCLodTerrainNode.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDLodTerrainGeometry.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDLodTerrainNode.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDLodTerrainSwitchNode.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMeshDate.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKLineSet.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCreateClodFactory.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCollapseRecord.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKQuadTerrainGeometry.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKRoamTerrainGemotry.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPointSet.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOrdinaryTriangleSet.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOrdinaryLineSet.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTriangleSet.cpp">
+      <Filter>Node\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSkelectonActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTerrainNode.cpp">
+      <Filter>Node\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SKBoneNode.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKStaticMeshNode.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSkelectonMeshNode.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSkelecton.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKModelSwitchNode.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKModelMeshNode.cpp">
+      <Filter>Node\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDynamicBufferGeometry.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKUseBuffer.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNodeComponent.cpp">
+      <Filter>Node\NodeComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="SKCamera.cpp">
+      <Filter>Node\NodeComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMeshComponent.cpp">
+      <Filter>Node\NodeComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="SKStaticMeshComponent.cpp">
+      <Filter>Node\NodeComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSkelectonMeshComponent.cpp">
+      <Filter>Node\NodeComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="SKGraphic.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKProfiler.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SKNullRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamImmediateAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamSmoothAnimBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamSmoothAnimBlendSequence.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTwoParamAnimBlendSequence.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKSocketNode.cpp">
+      <Filter>Node</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamMorphBlend.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKMorphBlendFunction.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKOneParamSmoothMorphBlend.cpp">
+      <Filter>Controller\Morph</Filter>
+    </ClCompile>
+    <ClCompile Include="SKAdditiveBlend.cpp">
+      <Filter>Controller\AnimTree</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPostEffectShaderFunction.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPostEffectPass.cpp">
+      <Filter>Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="SKPEMaterial.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SKColorBuffer.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKTexCoord.cpp">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="SKReflectCameraActor.cpp">
+      <Filter>World\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="SKGShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKHShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SKDShader.cpp">
+      <Filter>Matreial\Shader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SK1DTexSampler.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SK2DTexSampler.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAIState.h">
+      <Filter>World\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimTree.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimAtom.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimBaseFunction.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimBlendFunction.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimFunction.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimMainFunction.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimSequenceFunc.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnimSet.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCameraShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKArithmeticShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAnisotropicWardShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKBind.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCameraActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKASYNLoader.h">
+      <Filter>Asyn</Filter>
+    </ClInclude>
+    <ClInclude Include="SK1stCameraController.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="SKController.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="SKConstValue.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKConstFloatValue.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCookTorranceShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCustomShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDebugDraw.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCustomArchiveObject.h">
+      <Filter>Core\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="SKEngineThread.h">
+      <Filter>Asyn</Filter>
+    </ClInclude>
+    <ClInclude Include="SKEnumTrans.h">
+      <Filter>Core\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="SKEditorProperty.h">
+      <Filter>Core\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="SKFreeCameraController.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="SKGeometryNode.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKGeometry.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKIsotropicWardShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLightActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLightShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLightFunPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKIndirectRenderPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMeshNode.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMinnaertShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMaterialPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphBaseFunction.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphFunction.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphMainFunction.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphSequenceFunc.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphSet.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphTree.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNormalDepthPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMonitor.h">
+      <Filter>Asyn</Filter>
+    </ClInclude>
+    <ClInclude Include="SKName.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNode.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNormalFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOrenNayarShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPartialAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPEBlur.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPEEndFunction.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPEBeginFunction.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMain.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKGraphic.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKGraphicInclude.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPEGray.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPEMaterial.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPointer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPhoneShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPosShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPostEffectFunction.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPostEffectSet.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPrezPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPutNode.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRenderer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SKResource.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKReference.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPriority.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKProperty.h">
+      <Filter>Core\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRtti.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRectAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLogic.h">
+      <Filter>World\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRenderThread.h">
+      <Filter>Asyn</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSchlickShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShirleyShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShadowPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKResourceManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNVCompression.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShaderMainFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMaterial.h">
+      <Filter>Matreial</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShaderStringFactory.h">
+      <Filter>Matreial</Filter>
+    </ClInclude>
+    <ClInclude Include="SKStaticActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSwitchNode.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTexSampler.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTransform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKStraussShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKStream.h">
+      <Filter>Core\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTerrainActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTimeEvent.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSteer.h">
+      <Filter>World\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="SKType.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKVertexColor.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKUpdateThread.h">
+      <Filter>Asyn</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTwoParamAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKVariant.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKWorld.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="SK3DTexture.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SK1DTexture.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SK2DTexture.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCubeTexture.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLight.h">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPointLight.h">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDirectionLight.h">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDepthStencilState.h">
+      <Filter>Render\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="SKBlendState.h">
+      <Filter>Render\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRasterizerState.h">
+      <Filter>Render\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRenderState.h">
+      <Filter>Render\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSamplerState.h">
+      <Filter>Render\RenderState</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSkyLight.h">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSpotLight.h">
+      <Filter>Node\NodeComponent\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTexAllState.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTexture.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SKVertexFormat.h">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClInclude>
+    <ClInclude Include="SKVertexBuffer.h">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClInclude>
+    <ClInclude Include="SKIndexBuffer.h">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCaptureTexAllState.h">
+      <Filter>Render\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDataBuffer.h">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShaderKey.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKShaderMap.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKVShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKUserSampler.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKUserConstant.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRenderTarget.h">
+      <Filter>Render\RenderTarget</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDepthStencil.h">
+      <Filter>Render\RenderTarget</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSceneMap.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSortLight.h">
+      <Filter>Matreial</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCuller.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKScene.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSceneManager.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSpatial.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKViewFamily.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSceneRender.h">
+      <Filter>Render\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SKFont.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCLodTerrainGeometry.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCLodTerrainNode.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDLodTerrainGeometry.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDLodTerrainNode.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDLodTerrainSwitchNode.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMeshDate.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKLineSet.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCreateClodFactory.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCollapseRecord.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKQuadTerrainGeometry.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKRoamTerrainGemotry.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPointSet.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOrdinaryTriangleSet.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOrdinaryLineSet.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTriangleSet.h">
+      <Filter>Node\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSkelectonActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTerrainNode.h">
+      <Filter>Node\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SKBoneNode.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKStaticMeshNode.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSkelectonMeshNode.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSkelecton.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKModelSwitchNode.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKModelMeshNode.h">
+      <Filter>Node\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDynamicBufferGeometry.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKUseBuffer.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNodeComponent.h">
+      <Filter>Node\NodeComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="SKCamera.h">
+      <Filter>Node\NodeComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMeshComponent.h">
+      <Filter>Node\NodeComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="SKStaticMeshComponent.h">
+      <Filter>Node\NodeComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSkelectonMeshComponent.h">
+      <Filter>Node\NodeComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="SKProfiler.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SKNullRenderer.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamImmediateAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamSmoothAnimBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamSmoothAnimBlendSequence.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTwoParamAnimBlendSequence.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKSocketNode.h">
+      <Filter>Node</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamMorphBlend.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKMorphBlendFunction.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKOneParamSmoothMorphBlend.h">
+      <Filter>Controller\Morph</Filter>
+    </ClInclude>
+    <ClInclude Include="SKAdditiveBlend.h">
+      <Filter>Controller\AnimTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPostEffectShaderFunction.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKPostEffectPass.h">
+      <Filter>Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="SKColorBuffer.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKTexCoord.h">
+      <Filter>Matreial\ShaderFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="SKReflectCameraActor.h">
+      <Filter>World\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SKGShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKHShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SKDShader.h">
+      <Filter>Matreial\Shader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SKController.inl">
+      <Filter>Controller</Filter>
+    </None>
+    <None Include="SKNode.inl">
+      <Filter>Node</Filter>
+    </None>
+    <None Include="SKPointer.inl">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKRenderer.inl">
+      <Filter>Render</Filter>
+    </None>
+    <None Include="SKPriority.marc">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKProperty.marc">
+      <Filter>Core\Stream</Filter>
+    </None>
+    <None Include="SKRtti.marc">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKRtti.inl">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKInitial.marc">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKTransform.inl">
+      <Filter>Core</Filter>
+    </None>
+    <None Include="SKTexture.inl">
+      <Filter>Render\Texture</Filter>
+    </None>
+    <None Include="SKVertexBuffer.inl">
+      <Filter>Render\Vertex&amp;&amp;Index</Filter>
+    </None>
+    <None Include="SKUserConstant.inl">
+      <Filter>Matreial\Shader</Filter>
+    </None>
+    <None Include="SKCuller.inl">
+      <Filter>Render\SceneManager</Filter>
+    </None>
+    <None Include="SKMeshDate.inl">
+      <Filter>Node\Mesh</Filter>
+    </None>
+    <None Include="SKCamera.inl">
+      <Filter>Node\NodeComponent</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Node">
+      <UniqueIdentifier>{ad5d57dc-5e89-4371-a54d-e0b24ee837be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{77325d40-3025-41a5-959e-e293700f8969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Asyn">
+      <UniqueIdentifier>{06eb9c41-afdb-486b-99d9-ba797671af3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller">
+      <UniqueIdentifier>{aa4a7d9d-a45a-434f-8311-f53847772941}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostEffect">
+      <UniqueIdentifier>{dcf7cff6-fe0f-40f4-8114-58ed345ebf73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pass">
+      <UniqueIdentifier>{ad85a59e-ff61-4503-af6c-83391b51842a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matreial">
+      <UniqueIdentifier>{1a3a5d92-18cd-447d-bf6b-e9beef3a53f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{a40751c3-264c-4067-baca-98fa5170b837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller\AnimTree">
+      <UniqueIdentifier>{5532c4c8-ea72-4abf-a6eb-0374f72335d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller\Morph">
+      <UniqueIdentifier>{9bc52dd9-0822-4947-898e-cb3e98254743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World">
+      <UniqueIdentifier>{1b4c1517-ea19-4b68-94ba-b114242f5fd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\AI">
+      <UniqueIdentifier>{6034fa01-b879-48d7-a82d-fac3237e7e94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\Actor">
+      <UniqueIdentifier>{a0a30dc9-986b-4d8d-a213-6507273c3ac0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matreial\ShaderFunction">
+      <UniqueIdentifier>{6680d8e0-9d85-40c0-b960-33d2437e9552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Texture">
+      <UniqueIdentifier>{27552c19-2b28-4bdb-b076-561772259b01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\RenderState">
+      <UniqueIdentifier>{31d639f4-2a64-434a-bb74-128a280ae47f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Vertex&amp;&amp;Index">
+      <UniqueIdentifier>{e3ee8dc9-acba-41ce-b8fd-bd847e28d0e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\RenderTarget">
+      <UniqueIdentifier>{bd6d752d-f125-441b-80a4-161cc36a4163}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matreial\Shader">
+      <UniqueIdentifier>{5fbdc9ab-79ec-42d0-8c70-e1566ca9dbad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\SceneManager">
+      <UniqueIdentifier>{2e007d63-249d-40fa-a7d8-f205d9e7c451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Stream">
+      <UniqueIdentifier>{7b6cb9cb-5206-4c0d-b4ab-194d9e5d97ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Node\Terrain">
+      <UniqueIdentifier>{8a9d97d1-909b-4b9b-8aa5-797b357bdd7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Node\Mesh">
+      <UniqueIdentifier>{37ff0324-e8a9-4322-a3ef-2e2c6a5ed5f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Node\Model">
+      <UniqueIdentifier>{311c20b0-9b21-4b3c-bca0-a989aabbac3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Node\NodeComponent">
+      <UniqueIdentifier>{00b904b3-fe83-4a83-8aff-bf2a23c7ece9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Node\NodeComponent\Light">
+      <UniqueIdentifier>{01175394-056f-4811-ac7b-064210178238}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
