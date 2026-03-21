@@ -4,7 +4,7 @@
 namespace Skylark
 {
 	/**
-	 * 平台层（对标 UE: Core/GenericPlatform + Platform/*）
+	 * 平台层（对标 UE: Core/GenericPlatform + Platform）
 	 * - 目标：Skylark 作为嵌入式工业渲染引擎，必须与宿主 UI（Qt/Win32/macOS/Linux）解耦
 	 * - 约束：不在头文件直接 include <Windows.h> / <X11/...>，避免污染全局宏
 	 */

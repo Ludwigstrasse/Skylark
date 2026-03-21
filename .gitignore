@@ -1,0 +1,7 @@
+/build/
+/out/
+/vcpkg_installed/
+/CMakeUserPresets.json
+/.vs/
+/.idea/
+/.cache/

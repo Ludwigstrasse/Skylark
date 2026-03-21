@@ -1,155 +1,222 @@
-cmake_minimum_required(VERSION 3.20)
-project(SkylarkEngine LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.23)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(Skylark VERSION 0.1.0 LANGUAGES CXX)
 
-option(SK_BUILD_SAMPLES "Build Skylark samples" ON)
-option(SK_BUILD_TOOLS   "Build Skylark tools"   ON)
+include(GNUInstallDirs)
+include(CMakeDependentOption)
 
-# Modern RHI backend modules
-option(SK_WITH_D3D11_RHI "Build D3D11 RHI backend (modern, not legacy renderer)" OFF)
+option(SK_BUILD_LEGACY "Build legacy SKEngine2 modules" OFF)
+option(SK_BUILD_INSTALL "Enable install/export rules" ON)
+option(SK_BUILD_SHARED "Build Skylark libraries as shared libraries" OFF)
+option(SK_BUILD_SMOKE_TEST "Build a tiny host-side link smoke test" OFF)
+option(SK_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(SK_ENABLE_OPENGL "Enable OpenGL RHI backend" OFF)
+option(SK_ENABLE_VULKAN "Enable Vulkan RHI backend" OFF)
+cmake_dependent_option(SK_ENABLE_D3D11 "Enable D3D11 RHI backend" OFF "WIN32" OFF)
+cmake_dependent_option(SK_ENABLE_D3D12 "Enable D3D12 RHI backend" OFF "WIN32" OFF)
 
-# Legacy (VSEngine2 / SKEngine2) modules are heavy and Windows-only.
-# Keep them buildable for migration, but do NOT require them for the modern embedded runtime.
-option(SK_WITH_LEGACY_ENGINE2 "Build legacy SKEngine2 modules (RenderCore/Application/LegacyRHI)" OFF)
+set(BUILD_SHARED_LIBS ${SK_BUILD_SHARED})
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# ---- Helpers ----
-function(sk_collect_sources out_var dir)
-  file(GLOB_RECURSE _src
-    "${dir}/*.c" "${dir}/*.cc" "${dir}/*.cpp" "${dir}/*.cxx"
-    "${dir}/*.h" "${dir}/*.hpp" "${dir}/*.hh" "${dir}/*.inl"
-    "${dir}/*.rc" "${dir}/*.def"
-  )
-  set(${out_var} ${_src} PARENT_SCOPE)
-endfunction()
+add_library(skylark_project_options INTERFACE)
+add_library(skylark_project_warnings INTERFACE)
 
-function(sk_add_module target dir)
-  if(NOT EXISTS "${dir}")
-    message(FATAL_ERROR "Module dir not found: ${dir}")
-  endif()
-  sk_collect_sources(_src "${dir}")
-  add_library(${target} STATIC ${_src})
-  target_include_directories(${target} PUBLIC "${CMAKE_CURRENT_LIST_DIR}/Source")
-  target_compile_definitions(${target} PRIVATE SK_MODULE_NAME="${target}")
-  if(MSVC)
-    target_compile_options(${target} PRIVATE /W4 /permissive-)
-  else()
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
-  endif()
-endfunction()
+target_compile_features(skylark_project_options INTERFACE cxx_std_20)
 
-# ---- Core (always) ----
-sk_add_module(SKCore        "${CMAKE_CURRENT_LIST_DIR}/Source/SKCore")
-sk_add_module(SKMath        "${CMAKE_CURRENT_LIST_DIR}/Source/SKMath")
-sk_add_module(SKContainers  "${CMAKE_CURRENT_LIST_DIR}/Source/SKContainers")
-target_link_libraries(SKMath       PUBLIC SKCore)
-target_link_libraries(SKContainers PUBLIC SKCore)
+if(WIN32)
+  target_compile_definitions(skylark_project_options INTERFACE SK_PLATFORM_WINDOWS=1 SK_PLATFORM_LINUX=0 SK_PLATFORM_MAC=0)
+elseif(APPLE)
+  target_compile_definitions(skylark_project_options INTERFACE SK_PLATFORM_WINDOWS=0 SK_PLATFORM_LINUX=0 SK_PLATFORM_MAC=1)
+else()
+  target_compile_definitions(skylark_project_options INTERFACE SK_PLATFORM_WINDOWS=0 SK_PLATFORM_LINUX=1 SK_PLATFORM_MAC=0)
+endif()
 
-# ---- Platform (always) ----
-sk_add_module(SKPlatform    "${CMAKE_CURRENT_LIST_DIR}/Source/SKPlatform")
-target_link_libraries(SKPlatform PUBLIC SKCore)
+target_compile_definitions(skylark_project_options INTERFACE
+  $<$<BOOL:${SK_BUILD_LEGACY}>:SK_RUNTIME_WITH_LEGACY=1>
+  $<$<NOT:$<BOOL:${SK_BUILD_LEGACY}>>:SK_RUNTIME_WITH_LEGACY=0>
+  $<$<BOOL:${SK_ENABLE_D3D11}>:SK_WITH_D3D11_RHI=1>
+  $<$<NOT:$<BOOL:${SK_ENABLE_D3D11}>>:SK_WITH_D3D11_RHI=0>
+  $<$<BOOL:${SK_ENABLE_D3D12}>:SK_WITH_D3D12_RHI=1>
+  $<$<NOT:$<BOOL:${SK_ENABLE_D3D12}>>:SK_WITH_D3D12_RHI=0>
+  $<$<BOOL:${SK_ENABLE_OPENGL}>:SK_WITH_OPENGL_RHI=1>
+  $<$<NOT:$<BOOL:${SK_ENABLE_OPENGL}>>:SK_WITH_OPENGL_RHI=0>
+  $<$<BOOL:${SK_ENABLE_VULKAN}>:SK_WITH_VULKAN_RHI=1>
+  $<$<NOT:$<BOOL:${SK_ENABLE_VULKAN}>>:SK_WITH_VULKAN_RHI=0>
+)
 
-# ---- Modern RHI / RenderGraph / Renderer / Runtime / Engine (always) ----
-sk_add_module(SKRHI         "${CMAKE_CURRENT_LIST_DIR}/Source/SKRHI")
-sk_add_module(SKRenderGraph "${CMAKE_CURRENT_LIST_DIR}/Source/SKRenderGraph")
-sk_add_module(SKRenderer    "${CMAKE_CURRENT_LIST_DIR}/Source/SKRenderer")
-sk_add_module(SKRuntime     "${CMAKE_CURRENT_LIST_DIR}/Source/SKRuntime")
-sk_add_module(SKEngine      "${CMAKE_CURRENT_LIST_DIR}/Source/SKEngine")
-
-target_link_libraries(SKRHI         PUBLIC SKCore SKPlatform)
-target_link_libraries(SKRenderGraph PUBLIC SKCore SKRHI)
-target_link_libraries(SKRenderer    PUBLIC SKCore SKPlatform SKRHI SKRenderGraph SKScene SKInteraction)
-target_link_libraries(SKRuntime     PUBLIC SKCore SKPlatform SKRHI SKRenderer SKScene)
-target_link_libraries(SKEngine      PUBLIC SKCore SKRenderer SKRuntime)
-
-# ---- Domain extension points (always) ----
-sk_add_module(SKScene       "${CMAKE_CURRENT_LIST_DIR}/Source/SKScene")
-sk_add_module(SKCAD         "${CMAKE_CURRENT_LIST_DIR}/Source/SKCAD")
-sk_add_module(SKInteraction "${CMAKE_CURRENT_LIST_DIR}/Source/SKInteraction")
-sk_add_module(SKBIM         "${CMAKE_CURRENT_LIST_DIR}/Source/SKBIM")
-sk_add_module(SKCAE         "${CMAKE_CURRENT_LIST_DIR}/Source/SKCAE")
-
-target_link_libraries(SKScene       PUBLIC SKCore)
-target_link_libraries(SKCAD         PUBLIC SKCore)
-target_link_libraries(SKInteraction PUBLIC SKCore SKCAD SKRHI)
-target_link_libraries(SKBIM         PUBLIC SKCore)
-target_link_libraries(SKCAE         PUBLIC SKCore)
-
-# ---- Legacy (optional) ----
-if(SK_WITH_LEGACY_ENGINE2)
-  if(WIN32)
-    sk_add_module(SKInput       "${CMAKE_CURRENT_LIST_DIR}/Source/SKInput")
-    sk_add_module(SKLegacyRHI   "${CMAKE_CURRENT_LIST_DIR}/Source/SKLegacyRHI")
-    sk_add_module(SKRenderCore  "${CMAKE_CURRENT_LIST_DIR}/Source/SKRenderCore")
-    sk_add_module(SKApplication "${CMAKE_CURRENT_LIST_DIR}/Source/SKApplication")
-
-    target_link_libraries(SKInput       PUBLIC SKCore)
-    target_link_libraries(SKLegacyRHI   PUBLIC SKCore)
-    target_include_directories(SKLegacyRHI PUBLIC
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKLegacyRHI/SKD3D11"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKLegacyRHI/SKD3D9"
-    )
-    target_link_libraries(SKRenderCore  PUBLIC SKCore SKMath SKContainers)
-    target_include_directories(SKRenderCore PUBLIC
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKRenderCore"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKMath"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKContainers"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKCore"
-    )
-    target_link_libraries(SKApplication PUBLIC SKCore SKMath SKContainers SKInput SKRenderCore SKLegacyRHI)
-    target_include_directories(SKApplication PUBLIC
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKApplication"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKRenderCore"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKInput"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKLegacyRHI/SKD3D11"
-      "${CMAKE_CURRENT_LIST_DIR}/Source/SKLegacyRHI/SKD3D9"
-    )
-
-    # Runtime legacy bridge deps
-    target_link_libraries(SKRuntime PUBLIC SKMath SKContainers SKRenderCore SKLegacyRHI)
-    target_compile_definitions(SKRuntime PRIVATE SK_RUNTIME_WITH_LEGACY=1)
-  else()
-    message(WARNING "SK_WITH_LEGACY_ENGINE2 is ON but not on Windows; legacy modules will be skipped.")
+if(MSVC)
+  target_compile_options(skylark_project_options INTERFACE /permissive- /Zc:__cplusplus /EHsc /utf-8)
+  target_compile_options(skylark_project_warnings INTERFACE /W4)
+  if(SK_ENABLE_WARNINGS_AS_ERRORS)
+    target_compile_options(skylark_project_warnings INTERFACE /WX)
   endif()
 else()
-  target_compile_definitions(SKRuntime PRIVATE SK_RUNTIME_WITH_LEGACY=0)
+  target_compile_options(skylark_project_warnings INTERFACE -Wall -Wextra -Wpedantic)
+  if(SK_ENABLE_WARNINGS_AS_ERRORS)
+    target_compile_options(skylark_project_warnings INTERFACE -Werror)
+  endif()
 endif()
 
-# ---- Modern backend modules (optional) ----
-if(SK_WITH_D3D11_RHI)
-  if(WIN32)
-    sk_add_module(SKD3D11RHI "${CMAKE_CURRENT_LIST_DIR}/Source/SKD3D11RHI")
-    target_link_libraries(SKD3D11RHI PUBLIC SKCore SKPlatform)
-    target_link_libraries(SKD3D11RHI PUBLIC d3d11 dxgi)
-    target_link_libraries(SKRHI PUBLIC SKD3D11RHI)
-    target_compile_definitions(SKRHI PRIVATE SK_WITH_D3D11_RHI=1)
+set_target_properties(skylark_project_options skylark_project_warnings PROPERTIES FOLDER "Skylark/Internal")
+
+if(SK_BUILD_INSTALL)
+  install(TARGETS skylark_project_options skylark_project_warnings EXPORT SkylarkTargets)
+endif()
+
+function(sk_add_module target)
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs SOURCES PUBLIC_DEPS PRIVATE_DEPS PUBLIC_INCLUDE_DIRS PRIVATE_INCLUDE_DIRS PUBLIC_DEFINES PRIVATE_DEFINES LINK_LIBS)
+  cmake_parse_arguments(SK "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(NOT SK_SOURCES)
+    add_library(${target} INTERFACE)
   else()
-    message(WARNING "SK_WITH_D3D11_RHI is ON but not on Windows; will be disabled.")
-    target_compile_definitions(SKRHI PRIVATE SK_WITH_D3D11_RHI=0)
+    add_library(${target} ${SK_SOURCES})
   endif()
-else()
-  target_compile_definitions(SKRHI PRIVATE SK_WITH_D3D11_RHI=0)
+
+  add_library(Skylark::${target} ALIAS ${target})
+
+  if(SK_SOURCES)
+    target_link_libraries(${target}
+      PUBLIC skylark_project_options
+      PRIVATE skylark_project_warnings
+      PUBLIC ${SK_PUBLIC_DEPS}
+      PRIVATE ${SK_PRIVATE_DEPS}
+      PRIVATE ${SK_LINK_LIBS}
+    )
+    target_include_directories(${target}
+      PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Source>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        ${SK_PUBLIC_INCLUDE_DIRS}
+      PRIVATE
+        ${SK_PRIVATE_INCLUDE_DIRS}
+    )
+    if(SK_PUBLIC_DEFINES)
+      target_compile_definitions(${target} PUBLIC ${SK_PUBLIC_DEFINES})
+    endif()
+    if(SK_PRIVATE_DEFINES)
+      target_compile_definitions(${target} PRIVATE ${SK_PRIVATE_DEFINES})
+    endif()
+  else()
+    target_link_libraries(${target} INTERFACE skylark_project_options ${SK_PUBLIC_DEPS})
+    target_include_directories(${target} INTERFACE
+      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Source>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      ${SK_PUBLIC_INCLUDE_DIRS})
+    if(SK_PUBLIC_DEFINES)
+      target_compile_definitions(${target} INTERFACE ${SK_PUBLIC_DEFINES})
+    endif()
+  endif()
+
+  set_target_properties(${target} PROPERTIES FOLDER "Skylark")
+endfunction()
+
+function(sk_install_target target)
+  if(NOT SK_BUILD_INSTALL)
+    return()
+  endif()
+  install(TARGETS ${target}
+    EXPORT SkylarkTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endfunction()
+
+if(SK_ENABLE_OPENGL)
+  find_package(OpenGL QUIET)
+endif()
+if(SK_ENABLE_VULKAN)
+  find_package(Vulkan QUIET)
 endif()
 
-# ---- Tools ----
-if(SK_BUILD_TOOLS)
-  if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Tools")
-    file(GLOB _tool_dirs LIST_DIRECTORIES true "${CMAKE_CURRENT_LIST_DIR}/Tools/*")
-    foreach(_d ${_tool_dirs})
-      if(IS_DIRECTORY "${_d}")
-        get_filename_component(_name "${_d}" NAME)
-        string(REPLACE " " "_" _name "${_name}")
-        sk_add_module(${_name} "${_d}")
-      endif()
-    endforeach()
+sk_add_module(SKCore SOURCES Source/SKCore/SKCore.cpp)
+sk_add_module(SKLWC SOURCES Source/SKLWC/SKLWC.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKProfiler SOURCES Source/SKProfiler/SKProfiler.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKGeometry SOURCES Source/SKGeometry/SKGeometryRegistry.cpp Source/SKGeometry/SKMeshBuilder.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKField SOURCES Source/SKField/SKField.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKPlatform SOURCES Source/SKPlatform/SKPlatform.cpp Source/SKPlatform/SKWindowsPlatform.cpp Source/SKPlatform/SKLinuxPlatform.cpp Source/SKPlatform/SKMacPlatform.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKScene SOURCES Source/SKScene/SKScene.cpp Source/SKScene/SKSceneGraph.cpp Source/SKScene/SKPagedLOD.cpp PUBLIC_DEPS SKCore SKLWC)
+sk_add_module(SKRHI SOURCES Source/SKRHI/SKRHIFactory.cpp Source/SKRHI/SKNullRHI/SKNullRHI.cpp PUBLIC_DEPS SKCore SKPlatform)
+sk_add_module(SKRenderGraph SOURCES Source/SKRenderGraph/SKRenderGraph.cpp PUBLIC_DEPS SKCore SKProfiler SKRHI)
+sk_add_module(SKAnnotation SOURCES Source/SKAnnotation/SKAnnotation.cpp PUBLIC_DEPS SKCore SKScene)
+sk_add_module(SKCAD SOURCES Source/SKCAD/SKCadImporter.cpp PUBLIC_DEPS SKCore SKGeometry)
+sk_add_module(SKInteraction SOURCES Source/SKInteraction/SKInteraction.cpp Source/SKInteraction/SKHitProxyTable.cpp Source/SKInteraction/SKGpuPicker.cpp PUBLIC_DEPS SKCore SKCAD SKRHI)
+sk_add_module(SKBIM SOURCES Source/SKBIM/SKBIM.cpp Source/SKBIM/SKBIMVisibility.cpp PUBLIC_DEPS SKCore SKScene)
+sk_add_module(SKCAE SOURCES Source/SKCAE/SKCAE.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKStreaming SOURCES Source/SKStreaming/SKStreaming.cpp Source/SKStreaming/SKDatabasePager.cpp PUBLIC_DEPS SKCore SKScene)
+sk_add_module(SKRenderThread SOURCES Source/SKRenderThread/SKRenderThread.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKLineRender SOURCES Source/SKLineRender/SKLineRender.cpp PUBLIC_DEPS SKCore SKGeometry SKRHI SKScene)
+sk_add_module(SKFieldViz SOURCES Source/SKFieldViz/SKFieldViz.cpp Source/SKFieldViz/SKIsoSurface.cpp PUBLIC_DEPS SKCore SKField SKGeometry SKLineRender SKRHI SKScene)
+sk_add_module(SKRenderer SOURCES Source/SKRenderer/SKRenderer.cpp Source/SKRenderer/SKRenderPipeline.cpp Source/SKRenderer/SKDefaultPasses.cpp PUBLIC_DEPS SKCore SKPlatform SKProfiler SKRHI SKRenderGraph SKScene SKInteraction SKLineRender SKAnnotation SKFieldViz)
+sk_add_module(SKShaderCore SOURCES Source/SKShaderCore/SKShaderCore.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKShaderCompiler SOURCES Source/SKShaderCompiler/SKShaderCompiler.cpp PUBLIC_DEPS SKCore SKShaderCore)
+sk_add_module(SKPipelineCache SOURCES Source/SKPipelineCache/SKPipelineCache.cpp PUBLIC_DEPS SKCore SKShaderCore)
+sk_add_module(SKHZB SOURCES Source/SKHZB/SKHZB.cpp PUBLIC_DEPS SKCore SKRHI)
+sk_add_module(SKGpuCulling SOURCES Source/SKGpuCulling/SKGpuCulling.cpp PUBLIC_DEPS SKCore SKHZB SKScene)
+sk_add_module(SKMeasurement SOURCES Source/SKMeasurement/SKMeasurement.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKPMI SOURCES Source/SKPMI/SKPMI.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKTaskGraph SOURCES Source/SKTaskGraph/SKTaskGraph.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKRuntime SOURCES Source/SKRuntime/SKRuntimeEngine.cpp Source/SKRuntime/SKLegacyEngine2Context.cpp PUBLIC_DEPS SKCore SKGeometry SKField SKAnnotation SKRenderer SKRHI SKScene SKBIM SKStreaming SKRenderThread)
+sk_add_module(SKEngine SOURCES Source/SKEngine/SKEngine.cpp PUBLIC_DEPS SKCore SKRenderer SKRHI SKRuntime)
+
+if(SK_ENABLE_OPENGL)
+  sk_add_module(SKOpenGLRHI SOURCES Source/SKOpenGLRHI/SKOpenGLRHI.cpp PUBLIC_DEPS SKCore SKRHI)
+  if(TARGET OpenGL::GL)
+    target_link_libraries(SKOpenGLRHI PRIVATE OpenGL::GL)
+  elseif(WIN32)
+    target_link_libraries(SKOpenGLRHI PRIVATE opengl32)
   endif()
+  target_link_libraries(SKRHI PUBLIC SKOpenGLRHI)
+  sk_install_target(SKOpenGLRHI)
 endif()
 
-# ---- Samples ----
-if(SK_BUILD_SAMPLES)
-  if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Samples")
-    # NOTE: VSEngine2 demos are numerous and may require platform SDKs.
-    # You can add a small host sample here later.
+if(SK_ENABLE_VULKAN)
+  sk_add_module(SKVulkanRHI SOURCES Source/SKVulkanRHI/SKVulkanRHI.cpp PUBLIC_DEPS SKCore SKRHI)
+  if(TARGET Vulkan::Vulkan)
+    target_link_libraries(SKVulkanRHI PRIVATE Vulkan::Vulkan)
+  elseif(UNIX AND NOT APPLE)
+    target_link_libraries(SKVulkanRHI PRIVATE ${CMAKE_DL_LIBS})
   endif()
+  target_link_libraries(SKRHI PUBLIC SKVulkanRHI)
+  sk_install_target(SKVulkanRHI)
+endif()
+
+if(SK_ENABLE_D3D11)
+  sk_add_module(SKD3D11RHI SOURCES Source/SKD3D11RHI/SKD3D11RHI.cpp PUBLIC_DEPS SKCore SKRHI)
+  target_link_libraries(SKD3D11RHI PRIVATE d3d11 dxgi d3dcompiler)
+  target_link_libraries(SKRHI PUBLIC SKD3D11RHI)
+  sk_install_target(SKD3D11RHI)
+endif()
+
+if(SK_ENABLE_D3D12)
+  sk_add_module(SKD3D12RHI SOURCES Source/SKD3D12RHI/SKD3D12RHI.cpp PUBLIC_DEPS SKCore SKRHI SKShaderCompiler SKPipelineCache)
+  target_link_libraries(SKD3D12RHI PRIVATE d3d12 dxgi d3dcompiler)
+  target_link_libraries(SKRHI PUBLIC SKD3D12RHI)
+  sk_install_target(SKD3D12RHI)
+endif()
+
+if(SK_BUILD_LEGACY)
+  message(STATUS "Legacy SKEngine2 build path is enabled. This path remains Windows-only and is intentionally isolated from the default portable graph.")
+endif()
+
+foreach(target SKCore SKLWC SKProfiler SKGeometry SKField SKPlatform SKScene SKRHI SKRenderGraph SKAnnotation SKCAD SKInteraction SKBIM SKCAE SKStreaming SKRenderThread SKLineRender SKFieldViz SKRenderer SKShaderCore SKShaderCompiler SKPipelineCache SKHZB SKGpuCulling SKMeasurement SKPMI SKTaskGraph SKEngine SKRuntime)
+  sk_install_target(${target})
+endforeach()
+
+if(SK_BUILD_SMOKE_TEST)
+  add_executable(SkylarkSmoke Tests/SkylarkSmokeMain.cpp)
+  target_link_libraries(SkylarkSmoke PRIVATE SKEngine)
+  target_link_libraries(SkylarkSmoke PRIVATE skylark_project_options skylark_project_warnings)
+  set_target_properties(SkylarkSmoke PROPERTIES FOLDER "Skylark/Tests")
+endif()
+
+if(SK_BUILD_INSTALL)
+  install(DIRECTORY Source/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl")
+  install(EXPORT SkylarkTargets FILE SkylarkTargets.cmake NAMESPACE Skylark:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Skylark)
 endif()
