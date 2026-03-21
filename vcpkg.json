@@ -17,6 +17,15 @@
       "dependencies": [
         "vulkan"
       ]
+    },
+    "cadscene-test": {
+      "description": "Dependencies required by the Skylark CAD scene techniques test application.",
+      "dependencies": [
+        "glfw3",
+        "glew",
+        "zlib",
+        "opengl"
+      ]
     }
   },
   "builtin-baseline": "c3867e714dd3a51c272826eea77267876517ed99"

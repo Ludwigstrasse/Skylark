@@ -9,6 +9,7 @@ option(SK_BUILD_LEGACY "Build legacy SKEngine2 modules" OFF)
 option(SK_BUILD_INSTALL "Enable install/export rules" ON)
 option(SK_BUILD_SHARED "Build Skylark libraries as shared libraries" OFF)
 option(SK_BUILD_SMOKE_TEST "Build a tiny host-side link smoke test" OFF)
+option(SK_BUILD_CADSCENE_TEST_APP "Build the Skylark CAD scene techniques OpenGL test application" OFF)
 option(SK_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(SK_ENABLE_OPENGL "Enable OpenGL RHI backend" OFF)
 option(SK_ENABLE_VULKAN "Enable Vulkan RHI backend" OFF)
@@ -220,6 +221,42 @@ if(SK_BUILD_SMOKE_TEST)
   target_link_libraries(SkylarkSmoke PRIVATE SKEngine)
   target_link_libraries(SkylarkSmoke PRIVATE skylark_project_options skylark_project_warnings)
   set_target_properties(SkylarkSmoke PROPERTIES FOLDER "Skylark/Tests")
+endif()
+
+if(SK_BUILD_CADSCENE_TEST_APP)
+  find_package(OpenGL REQUIRED)
+  find_package(glfw3 CONFIG REQUIRED)
+  find_package(GLEW REQUIRED)
+  find_package(ZLIB REQUIRED)
+
+  set(SK_CADSCENE_TEST_SOURCES
+    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneApp.cpp
+    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.cpp
+    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.h
+    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.cpp
+    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.h
+  )
+
+  add_executable(SkylarkCadSceneTechniques ${SK_CADSCENE_TEST_SOURCES})
+  target_link_libraries(SkylarkCadSceneTechniques PRIVATE SKCore SKGeometry skylark_project_options skylark_project_warnings ZLIB::ZLIB GLEW::GLEW OpenGL::GL)
+
+  if(TARGET glfw)
+    target_link_libraries(SkylarkCadSceneTechniques PRIVATE glfw)
+  elseif(TARGET glfw3::glfw)
+    target_link_libraries(SkylarkCadSceneTechniques PRIVATE glfw3::glfw)
+  else()
+    message(FATAL_ERROR "Could not find an imported GLFW target from glfw3 package.")
+  endif()
+
+  target_compile_definitions(SkylarkCadSceneTechniques PRIVATE CSF_ZIP_SUPPORT=1)
+  target_include_directories(SkylarkCadSceneTechniques PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Source)
+  set_target_properties(SkylarkCadSceneTechniques PROPERTIES FOLDER "Skylark/Tests")
+
+  add_custom_command(TARGET SkylarkCadSceneTechniques POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:SkylarkCadSceneTechniques>/Tests/SkylarkCadSceneTechniques/Assets
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz
+      $<TARGET_FILE_DIR:SkylarkCadSceneTechniques>/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz)
 endif()
 
 if(SK_BUILD_INSTALL)

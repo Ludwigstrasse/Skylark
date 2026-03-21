@@ -77,3 +77,21 @@ vcpkg-backed Windows presets:
 - `SK_BUILD_SMOKE_TEST`
 
 The default configuration is intentionally conservative: portable modern modules are enabled, legacy SKEngine2 is disabled, and graphics backends are opt-in.
+
+
+## CAD scene techniques test application
+
+A new test/sample project lives under `Tests/SkylarkCadSceneTechniques`. It ports the uploaded `gl_cadscene_rendertechniques` sample into a Skylark-owned test application:
+
+- migrated CSF loader code (`SkCadSceneFile.*`)
+- complete original sample snapshot under `Tests/SkylarkCadSceneTechniques/ThirdParty/original_sample`
+- Skylark geometry import path using `FSKGeometryRegistry` and `FSKMeshBuilder`
+- OpenGL viewer modes: shaded, shaded+edges, wireframe, xray, object-id color, normal visualization
+- interaction toggles: exploded view, boundary edges, sharp edges
+
+Build with presets:
+
+- Linux: `cmake --preset linux-cadscene-debug && cmake --build --preset linux-cadscene-debug`
+- Windows: `cmake --preset windows-cadscene && cmake --build --preset windows-cadscene-debug`
+
+Run the app and it will load `Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz` by default. You can also pass a `.csf` or `.csf.gz` path on the command line.
