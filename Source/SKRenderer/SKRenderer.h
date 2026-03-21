@@ -33,7 +33,15 @@ namespace Skylark
 		float DeltaSeconds = 0.0f;
 	};
 
-	// ---- View / Feature Inputs (CAD/BIM/CAE) ----
+	
+	struct FSKDebugOptions
+	{
+		bool bDumpRenderGraphJson = false;
+		bool bLogDrawStats = false;
+		bool bLogStreamingStats = false;
+	};
+
+// ---- View / Feature Inputs (CAD/BIM/CAE) ----
 	struct FSKViewMatrices
 	{
 		FSKMatrix4f View = FSKMatrix4f::Identity();
@@ -61,10 +69,39 @@ namespace Skylark
 		bool bPostProcess = true;
 	};
 
+struct FSKEdgeRenderSettings
+	{
+		// Which edge set to display (derived from mesh adjacency or CAD kernel)
+		enum class EDisplay : uint8
+		{
+			All = 0,
+			Boundary,
+			Sharp,
+		};
+
+		EDisplay Display = EDisplay::Sharp;
+		float CreaseAngleDeg = 30.0f;
+		bool bOverlay = true; // if false, depth-tested (when depth is available)
+	};
+
+	struct FSKLineStyle
+	{
+		float Width = 1.0f;
+		bool bAntiAlias = true;
+		uint32 ColorRGBA8 = 0xFF000000u;
+		uint32 PatternMask = 0xFFFFFFFFu;
+		float PatternScale = 1.0f;
+	};
+
 	struct FSKBimFilter
 	{
-		// BIM category/discipline filter (placeholder): bitmask or semantic string set.
+		// BIM semantic filters (IFC/Revit): category/level/system masks.
 		uint64 CategoryMask = ~0ull;
+		uint64 LevelMask = ~0ull;
+		uint64 SystemMask = ~0ull;
+
+		// Per-view visibility mask (multi-viewport isolation; default all).
+		uint64 ViewVisibilityMask = ~0ull;
 	};
 
 	struct FSKFieldViz
@@ -78,13 +115,22 @@ namespace Skylark
 
 	struct FSKViewInfo
 	{
+		// LWC (V11): view origin in double precision.
+		FSKVector3d ViewOrigin = FSKVector3d(0.0, 0.0, 0.0);
 		FSKViewMatrices Matrices{};
 		ESKViewMode ViewMode = ESKViewMode::ShadedWithEdges;
 
 		FSKRenderFeatureFlags Features{};
+
+		// CAD edge/HLR settings (V7)
+		FSKEdgeRenderSettings EdgeSettings{};
+		FSKLineStyle VisibleLineStyle{};
+		FSKLineStyle HiddenLineStyle{ 1.0f, true, 0x80808080u, 0xF0F0F0F0u, 1.0f };
+
 		TArray<FSKSectionPlane> SectionPlanes;
 		FSKBimFilter BimFilter{};
 		FSKFieldViz FieldViz{};
+		FSKDebugOptions Debug{};
 	};
 
 	class ISKViewport

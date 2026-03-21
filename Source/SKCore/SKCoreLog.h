@@ -22,7 +22,7 @@ namespace Skylark
 		ESKLogVerbosity DefaultVerbosity = ESKLogVerbosity::Log;
 	};
 
-	SK_FORCEINLINE void SKVLog(const FSKLogCategory& Category, ESKLogVerbosity Verbosity, const char* Fmt, va_list Args)
+	inline void SKVLog(const FSKLogCategory& Category, ESKLogVerbosity Verbosity, const char* Fmt, va_list Args)
 	{
 		(void)Verbosity;
 		std::fprintf(stdout, "[%s] ", Category.Name);
@@ -31,7 +31,7 @@ namespace Skylark
 		std::fflush(stdout);
 	}
 
-	SK_FORCEINLINE void SKLog(const FSKLogCategory& Category, ESKLogVerbosity Verbosity, const char* Fmt, ...)
+	inline void SKLog(const FSKLogCategory& Category, ESKLogVerbosity Verbosity, const char* Fmt, ...)
 	{
 		va_list Args;
 		va_start(Args, Fmt);

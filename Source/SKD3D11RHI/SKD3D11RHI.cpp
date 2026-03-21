@@ -3,6 +3,7 @@
 #include "SKCore/SKCoreLog.h"
 
 #include <algorithm>
+#include <cstring>
 
 #if defined(_WIN32)
 	#ifndef WIN32_LEAN_AND_MEAN
@@ -12,7 +13,9 @@
 
 	#include <d3d11.h>
 	#include <dxgi1_6.h>
+	#include <d3dcompiler.h>
 	#include <wrl/client.h>
+	#pragma comment(lib, "d3dcompiler.lib")
 	#pragma comment(lib, "d3d11.lib")
 	#pragma comment(lib, "dxgi.lib")
 
@@ -50,11 +53,14 @@ namespace Skylark
 			const FSKRHITextureDesc& GetDesc() const override { return Desc; }
 			ID3D11Texture2D* GetNative() const { return Texture.Get(); }
 			ID3D11RenderTargetView* GetRTV() const { return RTV.Get(); }
+			ID3D11DepthStencilView* GetDSV() const { return DSV.Get(); }
 
 		private:
 			FSKRHITextureDesc Desc{};
 			ComPtr<ID3D11Texture2D> Texture;
 			ComPtr<ID3D11RenderTargetView> RTV;
+			ComPtr<ID3D11Texture2D> Depth;
+			ComPtr<ID3D11DepthStencilView> DSV;
 		};
 
 		class FSKD3D11RHISwapChain final : public ISKRHISwapChain
@@ -132,6 +138,29 @@ namespace Skylark
 					SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11 CreateRenderTargetView failed: 0x%08X", (unsigned)Hr);
 					return;
 				}
+
+				// Depth buffer (for CAD edge/HLR depth-tested overlays)
+				D3D11_TEXTURE2D_DESC DepthDesc{};
+				DepthDesc.Width = Desc.Width;
+				DepthDesc.Height = Desc.Height;
+				DepthDesc.MipLevels = 1;
+				DepthDesc.ArraySize = 1;
+				DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+				DepthDesc.SampleDesc.Count = 1;
+				DepthDesc.Usage = D3D11_USAGE_DEFAULT;
+				DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+				Hr = Device->CreateTexture2D(&DepthDesc, nullptr, &Depth);
+				if (FAILED(Hr))
+				{
+					SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11 CreateTexture2D(Depth) failed: 0x%08X", (unsigned)Hr);
+					return;
+				}
+				Hr = Device->CreateDepthStencilView(Depth.Get(), nullptr, &DSV);
+				if (FAILED(Hr))
+				{
+					SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11 CreateDepthStencilView failed: 0x%08X", (unsigned)Hr);
+					return;
+				}
 			}
 
 		private:
@@ -144,8 +173,9 @@ namespace Skylark
 		class FSKD3D11RHICommandList final : public ISKRHICommandList
 		{
 		public:
-			explicit FSKD3D11RHICommandList(ComPtr<ID3D11DeviceContext> InContext)
-				: Context(std::move(InContext))
+			FSKD3D11RHICommandList(ComPtr<ID3D11Device> InDevice, ComPtr<ID3D11DeviceContext> InContext)
+				: Device(std::move(InDevice))
+				, Context(std::move(InContext))
 			{}
 
 			void SetSwapChainRenderTarget(ISKRHISwapChain& InSwapChain) override
@@ -162,7 +192,8 @@ namespace Skylark
 				}
 
 				ID3D11RenderTargetView* RTV = D3D11SC->GetRTV();
-				Context->OMSetRenderTargets(1, &RTV, nullptr);
+				ID3D11DepthStencilView* DSV = D3D11SC->GetDSV();
+				Context->OMSetRenderTargets(1, &RTV, DSV);
 
 				const auto& Desc = InSwapChain.GetDesc();
 				D3D11_VIEWPORT VP{};
@@ -237,6 +268,70 @@ namespace Skylark
 
 				const float RGBA[4] = { Color.R, Color.G, Color.B, Color.A };
 				Context->ClearRenderTargetView(RTV, RGBA);
+				if (BoundSwapChain && BoundSwapChain->GetDSV())
+				{
+					Context->ClearDepthStencilView(BoundSwapChain->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+				}
+			}
+
+			void DrawLineList(const FSKRHILineVertex* Vertices, uint32 VertexCount, const FSKRHILineDrawParams& Params) override
+			{
+				if (!Context || !Device || !Vertices || VertexCount == 0)
+				{
+					return;
+				}
+
+				EnsureLinePipeline();
+				if (!LineVS || !LinePS || !LineLayout)
+				{
+					return;
+				}
+
+				const uint32 RequiredBytes = VertexCount * (uint32)sizeof(FSKRHILineVertex);
+				EnsureDynamicVB(RequiredBytes);
+				if (!LineVB)
+				{
+					return;
+				}
+
+				D3D11_MAPPED_SUBRESOURCE Mapped{};
+				HRESULT Hr = Context->Map(LineVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+				if (FAILED(Hr) || !Mapped.pData)
+				{
+					return;
+				}
+				std::memcpy(Mapped.pData, Vertices, RequiredBytes);
+				Context->Unmap(LineVB.Get(), 0);
+
+				UINT Stride = (UINT)sizeof(FSKRHILineVertex);
+				UINT Offset = 0;
+				ID3D11Buffer* VB = LineVB.Get();
+				Context->IASetVertexBuffers(0, 1, &VB, &Stride, &Offset);
+				Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+				Context->IASetInputLayout(LineLayout.Get());
+
+				Context->VSSetShader(LineVS.Get(), nullptr, 0);
+				Context->PSSetShader(LinePS.Get(), nullptr, 0);
+
+				if (LineBlend)
+				{
+					const float BlendFactor[4] = {0,0,0,0};
+					Context->OMSetBlendState(LineBlend.Get(), BlendFactor, 0xFFFFFFFFu);
+				}
+				if (LineRaster)
+				{
+					Context->RSSetState(LineRaster.Get());
+				}
+				if (Params.bDepthTest && LineDepthOn)
+				{
+					Context->OMSetDepthStencilState(LineDepthOn.Get(), 0);
+				}
+				else if (LineDepthOff)
+				{
+					Context->OMSetDepthStencilState(LineDepthOff.Get(), 0);
+				}
+
+				Context->Draw(VertexCount, 0);
 			}
 
 			void Flush() override
@@ -248,9 +343,113 @@ namespace Skylark
 			}
 
 		private:
+			void EnsureDynamicVB(uint32 RequiredBytes)
+			{
+				if (LineVB && LineVBCapacityBytes >= RequiredBytes)
+				{
+					return;
+				}
+				LineVB.Reset();
+				LineVBCapacityBytes = 0;
+
+				D3D11_BUFFER_DESC BD{};
+				BD.ByteWidth = std::max(RequiredBytes, 4096u);
+				BD.Usage = D3D11_USAGE_DYNAMIC;
+				BD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+				BD.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				HRESULT Hr = Device->CreateBuffer(&BD, nullptr, &LineVB);
+				if (SUCCEEDED(Hr) && LineVB)
+				{
+					LineVBCapacityBytes = BD.ByteWidth;
+				}
+			}
+
+			void EnsureLinePipeline()
+			{
+				if (LineVS && LinePS && LineLayout)
+				{
+					return;
+				}
+
+				static const char* ShaderSrc =
+					"struct VSIn { float4 Pos : POSITION; float4 Color : COLOR0; };
+"
+					"struct VSOut { float4 Pos : SV_Position; float4 Color : COLOR0; };
+"
+					"VSOut VSMain(VSIn In) { VSOut O; O.Pos = In.Pos; O.Color = In.Color; return O; }
+"
+					"float4 PSMain(VSOut In) : SV_Target { return In.Color; }
+";
+
+				ComPtr<ID3DBlob> VSBlob;
+				ComPtr<ID3DBlob> PSBlob;
+				ComPtr<ID3DBlob> Err;
+				UINT Flags = D3DCOMPILE_ENABLE_STRICTNESS;
+				HRESULT HrVS = D3DCompile(ShaderSrc, std::strlen(ShaderSrc), "SKLine", nullptr, nullptr, "VSMain", "vs_5_0", Flags, 0, &VSBlob, &Err);
+				if (FAILED(HrVS) || !VSBlob)
+				{
+					return;
+				}
+				HRESULT HrPS = D3DCompile(ShaderSrc, std::strlen(ShaderSrc), "SKLine", nullptr, nullptr, "PSMain", "ps_5_0", Flags, 0, &PSBlob, &Err);
+				if (FAILED(HrPS) || !PSBlob)
+				{
+					return;
+				}
+
+				Device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &LineVS);
+				Device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &LinePS);
+
+				D3D11_INPUT_ELEMENT_DESC IED[] = {
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+					{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				};
+				Device->CreateInputLayout(IED, 2, VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &LineLayout);
+
+				D3D11_BLEND_DESC BD{};
+				BD.RenderTarget[0].BlendEnable = TRUE;
+				BD.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+				BD.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+				BD.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+				BD.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+				BD.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+				BD.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+				BD.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+				Device->CreateBlendState(&BD, &LineBlend);
+
+				D3D11_RASTERIZER_DESC RD{};
+				RD.FillMode = D3D11_FILL_SOLID;
+				RD.CullMode = D3D11_CULL_NONE;
+				RD.DepthClipEnable = TRUE;
+				Device->CreateRasterizerState(&RD, &LineRaster);
+
+				D3D11_DEPTH_STENCIL_DESC DOn{};
+				DOn.DepthEnable = TRUE;
+				DOn.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+				DOn.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+				Device->CreateDepthStencilState(&DOn, &LineDepthOn);
+
+				D3D11_DEPTH_STENCIL_DESC DOff{};
+				DOff.DepthEnable = FALSE;
+				DOff.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+				DOff.DepthFunc = D3D11_COMPARISON_ALWAYS;
+				Device->CreateDepthStencilState(&DOff, &LineDepthOff);
+			}
+
+		private:
+			ComPtr<ID3D11Device> Device;
 			ComPtr<ID3D11DeviceContext> Context;
 			FSKD3D11RHISwapChain* BoundSwapChain = nullptr;
 			FSKD3D11RHITexture2D* BoundTexture = nullptr;
+
+			ComPtr<ID3D11VertexShader> LineVS;
+			ComPtr<ID3D11PixelShader> LinePS;
+			ComPtr<ID3D11InputLayout> LineLayout;
+			ComPtr<ID3D11BlendState> LineBlend;
+			ComPtr<ID3D11RasterizerState> LineRaster;
+			ComPtr<ID3D11DepthStencilState> LineDepthOn;
+			ComPtr<ID3D11DepthStencilState> LineDepthOff;
+			ComPtr<ID3D11Buffer> LineVB;
+			uint32 LineVBCapacityBytes = 0;
 		};
 	}
 
@@ -329,7 +528,7 @@ namespace Skylark
 			return false;
 		}
 
-		Impl->Cmd = std::make_unique<FSKD3D11RHICommandList>(Impl->Context);
+		Impl->Cmd = std::make_unique<FSKD3D11RHICommandList>(Impl->Device, Impl->Context);
 		SK_LOG(GLogSkylark, ESKLogVerbosity::Display, "D3D11RHI: device initialized.");
 		return true;
 	}

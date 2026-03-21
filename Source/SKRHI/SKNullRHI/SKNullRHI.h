@@ -74,6 +74,12 @@ namespace Skylark
 			}
 		}
 
+		void DrawLineList(const FSKRHILineVertex* Vertices, uint32 VertexCount, const FSKRHILineDrawParams& Params) override
+		{
+			(void)Vertices; (void)VertexCount; (void)Params;
+			// NullRHI: no-op
+		}
+
 		void Flush() override {}
 
 	private:
@@ -141,7 +147,7 @@ namespace Skylark
 			return true;
 		}
 
-		ESKRHIApi GetApi() const override { return Desc.Api; }
+		ESKRHIApi GetApi() const override { return ESKRHIApi::Null; }
 
 	private:
 		FSKRHIDeviceDesc Desc{};

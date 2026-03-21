@@ -19,6 +19,7 @@ namespace Skylark
 		Null = 0,
 		D3D11,
 		D3D12,
+		OpenGL,
 		Vulkan,
 		Metal,
 	};
@@ -98,10 +99,75 @@ namespace Skylark
 		float A = 1.0f;
 	};
 
+	// ---- Shader / Pipeline (V17 minimal public API) ----
+	enum class ESKRHIShaderStage : uint8
+	{
+		Unknown = 0,
+		Vertex,
+		Pixel,
+		Compute,
+	};
+
+	struct FSKRHIShaderModuleDesc
+	{
+		ESKRHIShaderStage Stage = ESKRHIShaderStage::Unknown;
+		const void* Bytecode = nullptr;
+		SIZE_T BytecodeSize = 0;
+		bool bBytecodeIsSpirv = false;
+		const char* DebugName = nullptr;
+	};
+
+	class ISKRHIShaderModule
+	{
+	public:
+		virtual ~ISKRHIShaderModule() = default;
+		virtual const FSKRHIShaderModuleDesc& GetDesc() const = 0;
+	};
+
+	struct FSKRHIGraphicsPipelineDesc
+	{
+		const char* DebugName = nullptr;
+		ISKRHIShaderModule* VertexShader = nullptr;
+		ISKRHIShaderModule* PixelShader = nullptr;
+		bool bDepthTest = true;
+		bool bWireframe = false;
+	};
+
+	class ISKRHIGraphicsPipelineState
+	{
+	public:
+		virtual ~ISKRHIGraphicsPipelineState() = default;
+		virtual const FSKRHIGraphicsPipelineDesc& GetDesc() const = 0;
+	};
+
 	/**
 	 * Minimal command list (UE: FRHICommandListImmediate)
 	 */
-	class ISKRHICommandList
+	
+	// ---- Line rendering (V7+) ----
+	struct FSKRHILineVertex
+	{
+		// Clip-space position (x,y,z,w). Renderer is responsible for transformation.
+		float X = 0.0f;
+		float Y = 0.0f;
+		float Z = 0.0f;
+		float W = 1.0f;
+
+		// Packed RGBA8 (R in lowest byte). Matches SKPackRGBA8.
+		uint32 ColorRGBA8 = 0xFF000000u;
+	};
+
+	struct FSKRHILineDrawParams
+	{
+		bool bDepthTest = true;
+		float Width = 1.0f;
+
+		// Patterned lines (dashed). Backend may ignore.
+		uint32 PatternMask = 0xFFFFFFFFu;
+		float PatternScale = 1.0f;
+	};
+
+class ISKRHICommandList
 	{
 	public:
 		virtual ~ISKRHICommandList() = default;
@@ -112,6 +178,22 @@ namespace Skylark
 
 		// Clear currently bound render target
 		virtual void ClearRenderTarget(const FSKRHIClearColor& Color) = 0;
+
+		// Optional public graphics pipeline path (V17). Legacy backends may treat this as a no-op.
+		virtual void BeginRenderPass(ISKRHISwapChain& SwapChain, const FSKRHIClearColor* ClearColor = nullptr)
+		{
+			SetSwapChainRenderTarget(SwapChain);
+			if (ClearColor)
+			{
+				ClearRenderTarget(*ClearColor);
+			}
+		}
+		virtual void EndRenderPass() {}
+		virtual void BindGraphicsPipeline(ISKRHIGraphicsPipelineState& Pipeline) { (void)Pipeline; }
+		virtual void DrawPrimitive(uint32 VertexCount, uint32 FirstVertex = 0u) { (void)VertexCount; (void)FirstVertex; }
+
+		// Draw line list (pairs of vertices). Used by CAD edges / HLR / overlays.
+		virtual void DrawLineList(const FSKRHILineVertex* Vertices, uint32 VertexCount, const FSKRHILineDrawParams& Params) = 0;
 
 		virtual void Flush() = 0;
 	};
@@ -137,6 +219,10 @@ namespace Skylark
 
 		// CPU readback (blocking; used for selection buffer in V5)
 		virtual bool ReadbackTexturePixelRGBA8(ISKRHITexture2D& Texture, uint32 X, uint32 Y, uint8 OutRGBA[4]) = 0;
+
+		// Optional public shader / pipeline API (V17). Backends may return null when unsupported.
+		virtual TUniquePtr<ISKRHIShaderModule> CreateShaderModule(const FSKRHIShaderModuleDesc& Desc) { (void)Desc; return {}; }
+		virtual TUniquePtr<ISKRHIGraphicsPipelineState> CreateGraphicsPipeline(const FSKRHIGraphicsPipelineDesc& Desc) { (void)Desc; return {}; }
 
 		virtual ESKRHIApi GetApi() const = 0;
 	};

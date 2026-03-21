@@ -1,5 +1,6 @@
 #pragma once
 #include "SKRenderer/SKRenderer.h"
+#include "SKProfiler/SKProfiler.h"
 #include "SKRenderer/SKRenderPass.h"
 
 namespace Skylark
@@ -17,8 +18,13 @@ namespace Skylark
 
 		void RenderFrame(ISKViewport& Viewport, const FSKFrameParams& Params) override;
 
+		// V10: last frame CPU pass timings (from RenderGraph).
+		const TArray<FSKPassTiming>& GetLastPassTimings() const { return LastPassTimings; }
+
 	private:
 		TArray<TUniquePtr<ISKRenderPass>> Passes;
 		TArray<TSharedPtr<ISKViewExtension>> Extensions;
+		TArray<FSKPassTiming> LastPassTimings;
+
 	};
 }

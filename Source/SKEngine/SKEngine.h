@@ -18,6 +18,7 @@ namespace Skylark
 		int32 BackBufferWidth = 1280;
 		int32 BackBufferHeight = 720;
 		bool bEnableVSync = true;
+		bool bUseRenderThread = true; // V11: dedicated render thread (UE-like)
 
 		// UE5-aligned: choose RHI backend
 		ESKRHIApi RhiApi = ESKRHIApi::Null;
@@ -34,6 +35,11 @@ namespace Skylark
 		virtual bool Init(const FSKEngineInitParams& Params) = 0;
 		virtual void Shutdown() = 0;
 		virtual void Tick(float DeltaSeconds) = 0;
+
+		// RHI lifecycle / switching. Runtime switching is implemented as a controlled renderer soft-restart:
+		// flush -> release viewport GPU resources -> recreate backend -> rebuild GPU state.
+		virtual ESKRHIApi GetCurrentRHIApi() const = 0;
+		virtual bool RecreateRHI(ESKRHIApi NewApi) = 0;
 
 		// Viewport 生命周期（支持多视图：MDI / 多窗格 / 视图同步）
 		virtual ISKViewport* CreateViewport(const FSKViewportDesc& Desc) = 0;

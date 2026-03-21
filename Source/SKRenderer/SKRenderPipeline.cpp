@@ -1,4 +1,5 @@
 #include "SKRenderer/SKRenderPipeline.h"
+#include "SKProfiler/SKProfiler.h"
 #include "SKRenderGraph/SKRenderGraph.h"
 #include "SKCore/SKCoreLog.h"
 
@@ -59,6 +60,10 @@ namespace Skylark
 		FSKRenderGraphBuilder Graph;
 		Graph.Reset();
 
+		FSKFrameProfiler FrameProf;
+		FrameProf.BeginFrame();
+		Graph.SetProfiler(&FrameProf);
+
 		for (const auto& P : Passes)
 		{
 			if (!P) continue;
@@ -70,6 +75,8 @@ namespace Skylark
 
 		Graph.Compile();
 		Graph.Execute(*Device, *SwapChain);
+		FrameProf.EndFrame();
+		LastPassTimings = FrameProf.GetTimings();
 
 		SwapChain->Present();
 		Device->EndFrame();

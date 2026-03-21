@@ -2,24 +2,24 @@
 #include "SKCore/SKAssert.h"
 #include "SKCore/SKCoreLog.h"
 
-#include <unordered_map>
 #include <queue>
+#include <unordered_map>
 
 namespace Skylark
 {
 	void FSKRGPassBuilder::ReadTexture(FSKRGTextureHandle Handle)
 	{
-		if (Handle.IsValid())
+		if (Pass && Handle.IsValid())
 		{
-			Pass.ReadTextures.push_back(Handle);
+			Pass->ReadTextures.push_back(Handle);
 		}
 	}
 
 	void FSKRGPassBuilder::WriteTexture(FSKRGTextureHandle Handle)
 	{
-		if (Handle.IsValid())
+		if (Pass && Handle.IsValid())
 		{
-			Pass.WriteTextures.push_back(Handle);
+			Pass->WriteTextures.push_back(Handle);
 		}
 	}
 
@@ -31,7 +31,7 @@ namespace Skylark
 		bCompiled = false;
 	}
 
-	FSKRenderGraphBuilder::FSKRGTexture* FSKRenderGraphBuilder::FindTextureByName(const FSKStringView Name)
+	FSKRGTexture* FSKRenderGraphBuilder::FindTextureByName(FSKStringView Name)
 	{
 		for (auto& T : Textures)
 		{
@@ -43,7 +43,7 @@ namespace Skylark
 		return nullptr;
 	}
 
-	FSKRGTextureHandle FSKRenderGraphBuilder::CreateTexture(const FSKStringView DebugName, const FSKRHITextureDesc& Desc)
+	FSKRGTextureHandle FSKRenderGraphBuilder::CreateTexture(FSKStringView DebugName, const FSKRHITextureDesc& Desc)
 	{
 		FSKRGTexture Tex{};
 		Tex.Name = FSKString(DebugName);
@@ -52,11 +52,10 @@ namespace Skylark
 		return FSKRGTextureHandle{ static_cast<uint32>(Textures.size()) };
 	}
 
-	FSKRGTextureHandle FSKRenderGraphBuilder::GetOrCreateTexture(const FSKStringView DebugName, const FSKRHITextureDesc& Desc)
+	FSKRGTextureHandle FSKRenderGraphBuilder::GetOrCreateTexture(FSKStringView DebugName, const FSKRHITextureDesc& Desc)
 	{
 		if (auto* Existing = FindTextureByName(DebugName))
 		{
-			// Keep first desc; assume stable per-frame.
 			(void)Desc;
 			const uint32 Id = static_cast<uint32>((Existing - &Textures[0]) + 1);
 			return FSKRGTextureHandle{ Id };
@@ -64,9 +63,8 @@ namespace Skylark
 		return CreateTexture(DebugName, Desc);
 	}
 
-	FSKRGTextureHandle FSKRenderGraphBuilder::RegisterExternalTexture(const FSKStringView DebugName, ISKRHITexture2D& Texture)
+	FSKRGTextureHandle FSKRenderGraphBuilder::RegisterExternalTexture(FSKStringView DebugName, ISKRHITexture2D& Texture)
 	{
-		// If name exists, overwrite external pointer (same handle)
 		if (auto* Existing = FindTextureByName(DebugName))
 		{
 			Existing->External = &Texture;
@@ -86,8 +84,7 @@ namespace Skylark
 		return FSKRGTextureHandle{ static_cast<uint32>(Textures.size()) };
 	}
 
-
-	void FSKRenderGraphBuilder::AddPass(const FSKStringView Name, FSKRGPassSetup Setup, FSKRGPassExecute Execute)
+	void FSKRenderGraphBuilder::AddPass(FSKStringView Name, FSKRGPassSetup Setup, FSKRGPassExecute Execute)
 	{
 		FSKRGPass Pass{};
 		Pass.Name = FSKString(Name);
@@ -103,9 +100,8 @@ namespace Skylark
 		bCompiled = false;
 	}
 
-	static void SKComputeDependencies(TArray<FSKRenderGraphBuilder::FSKRGPass>& Passes)
+	static void SKComputeDependencies(TArray<FSKRGPass>& Passes)
 	{
-		// Last writer per texture
 		std::unordered_map<uint32, uint32> LastWriter; // TexId -> PassIndex
 
 		for (uint32 PassIndex = 0; PassIndex < (uint32)Passes.size(); ++PassIndex)
@@ -153,7 +149,7 @@ namespace Skylark
 		}
 	}
 
-	static bool SKTopoSort(const TArray<FSKRenderGraphBuilder::FSKRGPass>& Passes, TArray<uint32>& OutOrder)
+	static bool SKTopoSort(const TArray<FSKRGPass>& Passes, TArray<uint32>& OutOrder)
 	{
 		const uint32 N = (uint32)Passes.size();
 		OutOrder.clear();
@@ -226,7 +222,7 @@ namespace Skylark
 
 	struct FSKRGContextImpl final : public FSKRGPassContext
 	{
-		const TArray<FSKRenderGraphBuilder::FSKRGTexture>* Textures = nullptr;
+		const TArray<FSKRGTexture>* Textures = nullptr;
 
 		ISKRHITexture2D* GetTexture(FSKRGTextureHandle Handle) const override
 		{
@@ -284,7 +280,15 @@ namespace Skylark
 			auto& P = Passes[PassIndex];
 			if (P.Execute)
 			{
-				P.Execute(Ctx);
+				if (Profiler)
+				{
+					FSKScopedCpuTimer Timer(Profiler, P.Name);
+					P.Execute(Ctx);
+				}
+				else
+				{
+					P.Execute(Ctx);
+				}
 			}
 		}
 	}
