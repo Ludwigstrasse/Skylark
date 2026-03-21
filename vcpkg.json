@@ -8,11 +8,16 @@
   "features": {
     "opengl": {
       "description": "Packages useful for the OpenGL backend path.",
-      "dependencies": ["opengl"]
+      "dependencies": [
+        "opengl"
+      ]
     },
     "vulkan": {
       "description": "Packages useful for the Vulkan backend path.",
-      "dependencies": ["vulkan"]
+      "dependencies": [
+        "vulkan"
+      ]
     }
-  }
+  },
+  "builtin-baseline": "c3867e714dd3a51c272826eea77267876517ed99"
 }
