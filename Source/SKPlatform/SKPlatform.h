@@ -11,6 +11,11 @@ namespace Skylark
 	struct FSKNativeWindow
 	{
 		void* Handle = nullptr; // HWND / NSView* / xcb_window_t / etc.
+
+		bool IsValid() const
+		{
+			return Handle != nullptr;
+		}
 	};
 
 	enum class ESKPlatform : uint8

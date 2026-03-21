@@ -34,11 +34,6 @@ jobs:
             configure_preset: windows-msvc
             build_preset: windows-msvc-debug
             configure_dir: out/build/windows-msvc
-          - name: windows-d3d11-debug
-            os: windows-2022
-            configure_preset: windows-d3d11
-            build_preset: windows-d3d11-debug
-            configure_dir: out/build/windows-d3d11
 
     steps:
       - name: Checkout
@@ -80,6 +75,62 @@ jobs:
 
       - name: Enable MSVC developer command prompt
         if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.configure_preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Upload CMake diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmake-logs-${{ matrix.name }}
+          if-no-files-found: ignore
+          path: |
+            ${{ matrix.configure_dir }}/CMakeFiles/CMakeOutput.log
+            ${{ matrix.configure_dir }}/CMakeFiles/CMakeError.log
+            ${{ matrix.configure_dir }}/vcpkg-manifest-install.log
+
+
+  experimental-backends:
+    if: github.event_name == 'workflow_dispatch'
+    name: experimental-${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-d3d11-debug
+            os: windows-2022
+            configure_preset: windows-d3d11
+            build_preset: windows-d3d11-debug
+            configure_dir: out/build/windows-d3d11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install CMake and Ninja
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cmake ninja
+
+      - name: Bootstrap vcpkg (Windows)
+        shell: pwsh
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$env:GITHUB_WORKSPACE/.vcpkg"
+          git -C "$env:GITHUB_WORKSPACE/.vcpkg" checkout "$env:VCPKG_COMMIT_ID"
+          & "$env:GITHUB_WORKSPACE/.vcpkg/bootstrap-vcpkg.bat" -disableMetrics
+          "VCPKG_ROOT=$env:GITHUB_WORKSPACE/.vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Enable MSVC developer command prompt
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure

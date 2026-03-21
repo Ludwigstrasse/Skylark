@@ -12,6 +12,12 @@ This repository now uses a target-oriented CMake layout with optional backend mo
 - Added `vcpkg.json` and `CMakePresets.json` for reproducible Windows/Linux workflows.
 - Added an optional smoke test executable (`SkylarkSmoke`) to verify the link graph.
 
+
+## CI
+
+- `skylark-ci` default matrix only covers the portable/stable lanes that are expected to stay green on GitHub-hosted runners: `linux-debug` and `windows-msvc-debug`.
+- Backend-specific jobs such as `windows-d3d11-debug` are kept in the same workflow under the `experimental-backends` job and run on `workflow_dispatch`, so backend bring-up does not block the main repository health signal.
+
 ## Build requirements
 
 - CMake 3.23 or newer

@@ -9,6 +9,9 @@
 	#ifndef WIN32_LEAN_AND_MEAN
 		#define WIN32_LEAN_AND_MEAN
 	#endif
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 	#include <windows.h>
 
 	#include <d3d11.h>
@@ -53,14 +56,11 @@ namespace Skylark
 			const FSKRHITextureDesc& GetDesc() const override { return Desc; }
 			ID3D11Texture2D* GetNative() const { return Texture.Get(); }
 			ID3D11RenderTargetView* GetRTV() const { return RTV.Get(); }
-			ID3D11DepthStencilView* GetDSV() const { return DSV.Get(); }
 
 		private:
 			FSKRHITextureDesc Desc{};
 			ComPtr<ID3D11Texture2D> Texture;
 			ComPtr<ID3D11RenderTargetView> RTV;
-			ComPtr<ID3D11Texture2D> Depth;
-			ComPtr<ID3D11DepthStencilView> DSV;
 		};
 
 		class FSKD3D11RHISwapChain final : public ISKRHISwapChain
@@ -88,6 +88,8 @@ namespace Skylark
 
 				// Release before ResizeBuffers
 				RTV.Reset();
+				DSV.Reset();
+				Depth.Reset();
 
 				HRESULT Hr = SwapChain->ResizeBuffers(
 					Desc.BufferCount,
@@ -115,6 +117,7 @@ namespace Skylark
 			}
 
 			ID3D11RenderTargetView* GetRTV() const { return RTV.Get(); }
+			ID3D11DepthStencilView* GetDSV() const { return DSV.Get(); }
 
 		private:
 			void RebuildBackBuffer()
@@ -168,6 +171,8 @@ namespace Skylark
 			ComPtr<IDXGISwapChain1> SwapChain;
 			ComPtr<ID3D11Device> Device;
 			ComPtr<ID3D11RenderTargetView> RTV;
+			ComPtr<ID3D11Texture2D> Depth;
+			ComPtr<ID3D11DepthStencilView> DSV;
 		};
 
 		class FSKD3D11RHICommandList final : public ISKRHICommandList
@@ -372,14 +377,12 @@ namespace Skylark
 				}
 
 				static const char* ShaderSrc =
-					"struct VSIn { float4 Pos : POSITION; float4 Color : COLOR0; };
-"
-					"struct VSOut { float4 Pos : SV_Position; float4 Color : COLOR0; };
-"
-					"VSOut VSMain(VSIn In) { VSOut O; O.Pos = In.Pos; O.Color = In.Color; return O; }
-"
-					"float4 PSMain(VSOut In) : SV_Target { return In.Color; }
-";
+					R"(
+struct VSIn { float4 Pos : POSITION; float4 Color : COLOR0; };
+struct VSOut { float4 Pos : SV_Position; float4 Color : COLOR0; };
+VSOut VSMain(VSIn In) { VSOut O; O.Pos = In.Pos; O.Color = In.Color; return O; }
+float4 PSMain(VSOut In) : SV_Target { return In.Color; }
+)";
 
 				ComPtr<ID3DBlob> VSBlob;
 				ComPtr<ID3DBlob> PSBlob;
@@ -562,7 +565,7 @@ namespace Skylark
 			return nullptr;
 		}
 
-		if (!InDesc.Window.IsValid())
+		if (InDesc.Window.Handle == nullptr)
 		{
 			SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11RHI: SwapChain requires a valid native window.");
 			return nullptr;
@@ -581,7 +584,7 @@ namespace Skylark
 		Desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
 		ComPtr<IDXGISwapChain1> SwapChain;
-		HWND Hwnd = reinterpret_cast<HWND>(InDesc.Window.HWnd);
+		HWND Hwnd = reinterpret_cast<HWND>(InDesc.Window.Handle);
 
 		HRESULT Hr = Impl->Factory->CreateSwapChainForHwnd(
 			Impl->Device.Get(),

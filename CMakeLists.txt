@@ -140,7 +140,13 @@ sk_add_module(SKLWC SOURCES Source/SKLWC/SKLWC.cpp PUBLIC_DEPS SKCore)
 sk_add_module(SKProfiler SOURCES Source/SKProfiler/SKProfiler.cpp PUBLIC_DEPS SKCore)
 sk_add_module(SKGeometry SOURCES Source/SKGeometry/SKGeometryRegistry.cpp Source/SKGeometry/SKMeshBuilder.cpp PUBLIC_DEPS SKCore)
 sk_add_module(SKField SOURCES Source/SKField/SKField.cpp PUBLIC_DEPS SKCore)
-sk_add_module(SKPlatform SOURCES Source/SKPlatform/SKPlatform.cpp Source/SKPlatform/SKWindowsPlatform.cpp Source/SKPlatform/SKLinuxPlatform.cpp Source/SKPlatform/SKMacPlatform.cpp PUBLIC_DEPS SKCore)
+sk_add_module(SKPlatform
+  SOURCES
+    Source/SKPlatform/SKPlatform.cpp
+    $<$<PLATFORM_ID:Windows>:Source/SKPlatform/SKWindowsPlatform.cpp>
+    $<$<PLATFORM_ID:Linux>:Source/SKPlatform/SKLinuxPlatform.cpp>
+    $<$<PLATFORM_ID:Darwin>:Source/SKPlatform/SKMacPlatform.cpp>
+  PUBLIC_DEPS SKCore)
 sk_add_module(SKScene SOURCES Source/SKScene/SKScene.cpp Source/SKScene/SKSceneGraph.cpp Source/SKScene/SKPagedLOD.cpp PUBLIC_DEPS SKCore SKLWC)
 sk_add_module(SKRHI SOURCES Source/SKRHI/SKRHIFactory.cpp Source/SKRHI/SKNullRHI/SKNullRHI.cpp PUBLIC_DEPS SKCore SKPlatform)
 sk_add_module(SKRenderGraph SOURCES Source/SKRenderGraph/SKRenderGraph.cpp PUBLIC_DEPS SKCore SKProfiler SKRHI)
