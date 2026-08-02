@@ -3,7 +3,7 @@
   "name": "skylark",
   "version-string": "0.1.0",
   "description": "Skylark rendering backend build manifest.",
-  "license": "Proprietary",
+  "license": "LicenseRef-Proprietary",
   "dependencies": [],
   "features": {
     "opengl": {
@@ -25,6 +25,13 @@
         "glew",
         "zlib",
         "opengl"
+      ]
+    },
+    "cadscene-runtime-test": {
+      "description": "Dependencies required by the Skylark CAD editor lab runtime application.",
+      "dependencies": [
+        "glfw3",
+        "zlib"
       ]
     }
   },

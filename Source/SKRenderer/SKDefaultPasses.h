@@ -51,6 +51,20 @@ namespace Skylark
 		void AddToGraph(FSKRenderGraphBuilder& Graph, ISKViewport& Viewport, const FSKViewInfo& View) override;
 	};
 
+
+class FSKSelectionOverlayPass final : public ISKRenderPass
+{
+public:
+	const char* GetName() const override { return "SelectionOverlay"; }
+	bool IsEnabled(const FSKViewInfo& View) const override
+	{
+		return View.Selection.Style.bEnable
+			&& ((!View.Selection.SelectedTopoIds.empty() && View.Selection.Style.bShowSelection)
+				|| (!View.Selection.HoveredTopoIds.empty() && View.Selection.Style.bShowHover));
+	}
+	void AddToGraph(FSKRenderGraphBuilder& Graph, ISKViewport& Viewport, const FSKViewInfo& View) override;
+};
+
 	class FSKPostProcessPass final : public ISKRenderPass
 	{
 	public:

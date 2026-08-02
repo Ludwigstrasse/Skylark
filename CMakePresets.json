@@ -27,7 +27,7 @@
       "name": "base-vcpkg",
       "hidden": true,
       "inherits": "base",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      "toolchainFile": "${sourceDir}/third_party/vcpkg/scripts/buildsystems/vcpkg.cmake"
     },
     {
       "name": "dev-linux-debug",
@@ -55,6 +55,14 @@
       }
     },
     {
+      "name": "linux-cadscene-debug",
+      "inherits": "linux-opengl-debug",
+      "cacheVariables": {
+        "SK_BUILD_CADSCENE_TEST_APP": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
+      }
+    },
+    {
       "name": "linux-debug",
       "inherits": "base-vcpkg",
       "condition": {
@@ -65,6 +73,14 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "SK_BUILD_SMOKE_TEST": "ON"
+      }
+    },
+    {
+      "name": "linux-opengl-debug",
+      "inherits": "linux-debug",
+      "cacheVariables": {
+        "SK_ENABLE_OPENGL": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl"
       }
     },
     {
@@ -88,11 +104,111 @@
       }
     },
     {
-      "name": "linux-opengl-debug",
-      "inherits": "linux-debug",
+      "name": "windows-cadeditor-d3d11",
+      "inherits": "windows-d3d11",
+      "cacheVariables": {
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-d3d11-vs2022",
+      "inherits": "windows-vs2022",
+      "cacheVariables": {
+        "SK_ENABLE_D3D11": "ON",
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-d3d12",
+      "inherits": "windows-d3d12",
+      "cacheVariables": {
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-d3d12-vs2022",
+      "inherits": "windows-vs2022",
+      "cacheVariables": {
+        "SK_ENABLE_D3D12": "ON",
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-opengl",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "SK_BUILD_SMOKE_TEST": "OFF",
+        "SK_ENABLE_OPENGL": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-opengl-vs2022",
+      "inherits": "windows-vs2022",
+      "cacheVariables": {
+        "SK_BUILD_SMOKE_TEST": "OFF",
+        "SK_ENABLE_OPENGL": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-vulkan",
+      "inherits": "windows-vulkan",
+      "cacheVariables": {
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "vulkan;cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadeditor-vulkan-vs2022",
+      "inherits": "windows-vs2022",
+      "cacheVariables": {
+        "SK_ENABLE_VULKAN": "ON",
+        "SK_BUILD_CAD_EDITOR_LAB": "ON",
+        "VCPKG_MANIFEST_FEATURES": "vulkan;cadscene-runtime-test"
+      }
+    },
+    {
+      "name": "windows-cadscene",
+      "inherits": "windows-opengl",
+      "cacheVariables": {
+        "SK_BUILD_CADSCENE_TEST_APP": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
+      }
+    },
+    {
+      "name": "windows-cadscene-opengl",
+      "inherits": "windows-opengl",
+      "cacheVariables": {
+        "SK_BUILD_CADSCENE_TEST_APP": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
+      }
+    },
+    {
+      "name": "windows-cadscene-opengl-vs2022",
+      "inherits": "windows-vs2022",
       "cacheVariables": {
         "SK_ENABLE_OPENGL": "ON",
-        "VCPKG_MANIFEST_FEATURES": "opengl"
+        "SK_BUILD_CADSCENE_TEST_APP": "ON",
+        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
+      }
+    },
+    {
+      "name": "windows-d3d11",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "SK_ENABLE_D3D11": "ON"
+      }
+    },
+    {
+      "name": "windows-d3d12",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "SK_ENABLE_D3D12": "ON"
       }
     },
     {
@@ -111,20 +227,6 @@
       }
     },
     {
-      "name": "windows-d3d11",
-      "inherits": "windows-msvc",
-      "cacheVariables": {
-        "SK_ENABLE_D3D11": "ON"
-      }
-    },
-    {
-      "name": "windows-d3d12",
-      "inherits": "windows-msvc",
-      "cacheVariables": {
-        "SK_ENABLE_D3D12": "ON"
-      }
-    },
-    {
       "name": "windows-opengl",
       "inherits": "windows-msvc",
       "cacheVariables": {
@@ -133,27 +235,27 @@
       }
     },
     {
+      "name": "windows-vs2022",
+      "inherits": "base-vcpkg",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "SK_BUILD_SMOKE_TEST": "ON"
+      }
+    },
+    {
       "name": "windows-vulkan",
       "inherits": "windows-msvc",
       "cacheVariables": {
         "SK_ENABLE_VULKAN": "ON",
         "VCPKG_MANIFEST_FEATURES": "vulkan"
-      }
-    },
-    {
-      "name": "linux-cadscene-debug",
-      "inherits": "linux-opengl-debug",
-      "cacheVariables": {
-        "SK_BUILD_CADSCENE_TEST_APP": "ON",
-        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
-      }
-    },
-    {
-      "name": "windows-cadscene",
-      "inherits": "windows-opengl",
-      "cacheVariables": {
-        "SK_BUILD_CADSCENE_TEST_APP": "ON",
-        "VCPKG_MANIFEST_FEATURES": "opengl;cadscene-test"
       }
     }
   ],
@@ -167,8 +269,16 @@
       "configurePreset": "dev-linux-release"
     },
     {
+      "name": "linux-cadscene-debug",
+      "configurePreset": "linux-cadscene-debug"
+    },
+    {
       "name": "linux-debug",
       "configurePreset": "linux-debug"
+    },
+    {
+      "name": "linux-opengl-debug",
+      "configurePreset": "linux-opengl-debug"
     },
     {
       "name": "linux-release",
@@ -179,18 +289,59 @@
       "configurePreset": "linux-vulkan-debug"
     },
     {
-      "name": "linux-opengl-debug",
-      "configurePreset": "linux-opengl-debug"
-    },
-    {
-      "name": "windows-msvc-debug",
-      "configurePreset": "windows-msvc",
+      "name": "windows-cadeditor-d3d11-debug",
+      "configurePreset": "windows-cadeditor-d3d11",
       "configuration": "Debug"
     },
     {
-      "name": "windows-msvc-release",
-      "configurePreset": "windows-msvc",
-      "configuration": "Release"
+      "name": "windows-cadeditor-d3d11-vs2022-debug",
+      "configurePreset": "windows-cadeditor-d3d11-vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-d3d12-debug",
+      "configurePreset": "windows-cadeditor-d3d12",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-d3d12-vs2022-debug",
+      "configurePreset": "windows-cadeditor-d3d12-vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-opengl-debug",
+      "configurePreset": "windows-cadeditor-opengl",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-opengl-vs2022-debug",
+      "configurePreset": "windows-cadeditor-opengl-vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-vulkan-debug",
+      "configurePreset": "windows-cadeditor-vulkan",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadeditor-vulkan-vs2022-debug",
+      "configurePreset": "windows-cadeditor-vulkan-vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadscene-debug",
+      "configurePreset": "windows-cadscene",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadscene-opengl-debug",
+      "configurePreset": "windows-cadscene-opengl",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-cadscene-opengl-vs2022-debug",
+      "configurePreset": "windows-cadscene-opengl-vs2022",
+      "configuration": "Debug"
     },
     {
       "name": "windows-d3d11-debug",
@@ -203,6 +354,16 @@
       "configuration": "Debug"
     },
     {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release"
+    },
+    {
       "name": "windows-opengl-debug",
       "configurePreset": "windows-opengl",
       "configuration": "Debug"
@@ -210,15 +371,6 @@
     {
       "name": "windows-vulkan-debug",
       "configurePreset": "windows-vulkan",
-      "configuration": "Debug"
-    },
-    {
-      "name": "linux-cadscene-debug",
-      "configurePreset": "linux-cadscene-debug"
-    },
-    {
-      "name": "windows-cadscene-debug",
-      "configurePreset": "windows-cadscene",
       "configuration": "Debug"
     }
   ]

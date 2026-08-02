@@ -24,9 +24,28 @@ namespace Skylark
 			return R;
 		}
 
-		R.Type = ESKPickType::Object; // detailed Face/Edge etc resolved by Topo.Type later
+		switch (Topo.Type)
+		{
+		case ESKObjectEntityType::Vertex:
+			R.Type = ESKPickType::Vertex;
+			break;
+		case ESKObjectEntityType::Edge:
+			R.Type = ESKPickType::Edge;
+			break;
+		case ESKObjectEntityType::Face:
+			R.Type = ESKPickType::Face;
+			break;
+		case ESKObjectEntityType::Element:
+			R.Type = ESKPickType::BimElement;
+			break;
+		case ESKObjectEntityType::Body:
+		default:
+			R.Type = ESKPickType::Object;
+			break;
+		}
 		R.ObjectId = Topo.Hash64();   // bridge to legacy 64-bit until SolidDesigner ObjectId is wired
 		R.SubId = Topo.SubId;
+		R.TopoId = Topo;
 		return R;
 	}
 }

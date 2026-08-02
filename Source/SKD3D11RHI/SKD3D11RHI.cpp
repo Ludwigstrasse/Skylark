@@ -47,20 +47,27 @@ namespace Skylark
 		public:
 			FSKD3D11RHITexture2D(const FSKRHITextureDesc& InDesc,
 				ComPtr<ID3D11Texture2D> InTex,
-				ComPtr<ID3D11RenderTargetView> InRTV)
+				ComPtr<ID3D11RenderTargetView> InRTV,
+				ComPtr<ID3D11Texture2D> InDepth,
+				ComPtr<ID3D11DepthStencilView> InDSV)
 				: Desc(InDesc)
 				, Texture(std::move(InTex))
 				, RTV(std::move(InRTV))
+				, Depth(std::move(InDepth))
+				, DSV(std::move(InDSV))
 			{}
 
 			const FSKRHITextureDesc& GetDesc() const override { return Desc; }
 			ID3D11Texture2D* GetNative() const { return Texture.Get(); }
 			ID3D11RenderTargetView* GetRTV() const { return RTV.Get(); }
+			ID3D11DepthStencilView* GetDSV() const { return DSV.Get(); }
 
 		private:
 			FSKRHITextureDesc Desc{};
 			ComPtr<ID3D11Texture2D> Texture;
 			ComPtr<ID3D11RenderTargetView> RTV;
+			ComPtr<ID3D11Texture2D> Depth;
+			ComPtr<ID3D11DepthStencilView> DSV;
 		};
 
 		class FSKD3D11RHISwapChain final : public ISKRHISwapChain
@@ -233,7 +240,8 @@ namespace Skylark
 					return;
 				}
 
-				Context->OMSetRenderTargets(1, &RTV, nullptr);
+				ID3D11DepthStencilView* DSV = Tex->GetDSV();
+				Context->OMSetRenderTargets(1, &RTV, DSV);
 
 				const auto& Desc = Tex->GetDesc();
 				D3D11_VIEWPORT VP{};
@@ -276,6 +284,10 @@ namespace Skylark
 				if (BoundSwapChain && BoundSwapChain->GetDSV())
 				{
 					Context->ClearDepthStencilView(BoundSwapChain->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+				}
+				if (BoundTexture && BoundTexture->GetDSV())
+				{
+					Context->ClearDepthStencilView(BoundTexture->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 				}
 			}
 
@@ -337,6 +349,142 @@ namespace Skylark
 				}
 
 				Context->Draw(VertexCount, 0);
+			}
+
+			void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params) override
+			{
+				if (!Vertices || VertexCount < 3)
+				{
+					return;
+				}
+
+				TriangleScratchIndices.resize(static_cast<SIZE_T>(VertexCount));
+				for (uint32 Index = 0; Index < VertexCount; ++Index)
+				{
+					TriangleScratchIndices[Index] = Index;
+				}
+
+				DrawIndexedTriangleList(Vertices, VertexCount, TriangleScratchIndices.data(), VertexCount, Params);
+			}
+
+			void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params) override
+			{
+				if (!Vertices || !Indices || VertexCount == 0 || IndexCount < 3)
+				{
+					return;
+				}
+
+				const FSKRHITriangleInstance Identity = MakeIdentityInstance();
+				DrawIndexedInstancedTriangleList(Vertices, VertexCount, Indices, IndexCount, &Identity, 1u, Params);
+			}
+
+			void DrawIndexedInstancedTriangleList(
+				const FSKRHITriangleVertex* Vertices,
+				uint32 VertexCount,
+				const uint32* Indices,
+				uint32 IndexCount,
+				const FSKRHITriangleInstance* Instances,
+				uint32 InstanceCount,
+				const FSKRHITriangleDrawParams& Params) override
+			{
+				if (!Context || !Device || !Vertices || !Indices || !Instances || VertexCount == 0 || IndexCount < 3 || InstanceCount == 0)
+				{
+					return;
+				}
+
+				EnsureTrianglePipeline();
+				if (!TriVS || !TriPS || !TriLayout)
+				{
+					return;
+				}
+
+				const uint32 VertexBytes = VertexCount * (uint32)sizeof(FSKRHITriangleVertex);
+				const uint32 IndexBytes = IndexCount * (uint32)sizeof(uint32);
+				const uint32 InstanceBytes = InstanceCount * (uint32)sizeof(FSKRHITriangleInstance);
+
+				EnsureTriangleVB(VertexBytes);
+				EnsureTriangleIB(IndexBytes);
+				EnsureTriangleInstanceVB(InstanceBytes);
+				if (!TriVB || !TriIB || !TriInstanceVB)
+				{
+					return;
+				}
+
+				D3D11_MAPPED_SUBRESOURCE Mapped{};
+				HRESULT Hr = Context->Map(TriVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+				if (FAILED(Hr) || !Mapped.pData)
+				{
+					return;
+				}
+				std::memcpy(Mapped.pData, Vertices, VertexBytes);
+				Context->Unmap(TriVB.Get(), 0);
+
+				Hr = Context->Map(TriIB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+				if (FAILED(Hr) || !Mapped.pData)
+				{
+					return;
+				}
+				std::memcpy(Mapped.pData, Indices, IndexBytes);
+				Context->Unmap(TriIB.Get(), 0);
+
+				Hr = Context->Map(TriInstanceVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+				if (FAILED(Hr) || !Mapped.pData)
+				{
+					return;
+				}
+				std::memcpy(Mapped.pData, Instances, InstanceBytes);
+				Context->Unmap(TriInstanceVB.Get(), 0);
+
+				UINT Strides[2] = { (UINT)sizeof(FSKRHITriangleVertex), (UINT)sizeof(FSKRHITriangleInstance) };
+				UINT Offsets[2] = { 0u, 0u };
+				ID3D11Buffer* Buffers[2] = { TriVB.Get(), TriInstanceVB.Get() };
+				Context->IASetVertexBuffers(0, 2, Buffers, Strides, Offsets);
+				Context->IASetIndexBuffer(TriIB.Get(), DXGI_FORMAT_R32_UINT, 0);
+				Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				Context->IASetInputLayout(TriLayout.Get());
+
+				Context->VSSetShader(TriVS.Get(), nullptr, 0);
+				Context->PSSetShader(TriPS.Get(), nullptr, 0);
+
+				const float BlendFactor[4] = { 0, 0, 0, 0 };
+				if (Params.bAlphaBlend)
+				{
+					if (TriBlendAlpha)
+					{
+						Context->OMSetBlendState(TriBlendAlpha.Get(), BlendFactor, 0xFFFFFFFFu);
+					}
+				}
+				else if (TriBlendOpaque)
+				{
+					Context->OMSetBlendState(TriBlendOpaque.Get(), BlendFactor, 0xFFFFFFFFu);
+				}
+
+				if (Params.bCullBackFace && TriRasterCullBack)
+				{
+					Context->RSSetState(TriRasterCullBack.Get());
+				}
+				else if (TriRasterCullNone)
+				{
+					Context->RSSetState(TriRasterCullNone.Get());
+				}
+
+				if (Params.bDepthTest)
+				{
+					if (Params.bDepthWrite && TriDepthOnWrite)
+					{
+						Context->OMSetDepthStencilState(TriDepthOnWrite.Get(), 0);
+					}
+					else if (TriDepthOnReadOnly)
+					{
+						Context->OMSetDepthStencilState(TriDepthOnReadOnly.Get(), 0);
+					}
+				}
+				else if (TriDepthOff)
+				{
+					Context->OMSetDepthStencilState(TriDepthOff.Get(), 0);
+				}
+
+				Context->DrawIndexedInstanced(IndexCount, InstanceCount, 0, 0, 0);
 			}
 
 			void Flush() override
@@ -438,6 +586,192 @@ float4 PSMain(VSOut In) : SV_Target { return In.Color; }
 				Device->CreateDepthStencilState(&DOff, &LineDepthOff);
 			}
 
+
+			static FSKRHITriangleInstance MakeIdentityInstance()
+			{
+				FSKRHITriangleInstance Result{};
+				Result.LocalToWorld = FSKMatrix4f::Identity();
+				Result.TintRGBA8 = 0xFFFFFFFFu;
+				return Result;
+			}
+
+			void EnsureTriangleVB(uint32 RequiredBytes)
+			{
+				if (TriVB && TriVBCapacityBytes >= RequiredBytes)
+				{
+					return;
+				}
+				TriVB.Reset();
+				TriVBCapacityBytes = 0u;
+
+				D3D11_BUFFER_DESC BD{};
+				BD.ByteWidth = std::max(RequiredBytes, 4096u);
+				BD.Usage = D3D11_USAGE_DYNAMIC;
+				BD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+				BD.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				HRESULT Hr = Device->CreateBuffer(&BD, nullptr, &TriVB);
+				if (SUCCEEDED(Hr) && TriVB)
+				{
+					TriVBCapacityBytes = BD.ByteWidth;
+				}
+			}
+
+			void EnsureTriangleIB(uint32 RequiredBytes)
+			{
+				if (TriIB && TriIBCapacityBytes >= RequiredBytes)
+				{
+					return;
+				}
+				TriIB.Reset();
+				TriIBCapacityBytes = 0u;
+
+				D3D11_BUFFER_DESC BD{};
+				BD.ByteWidth = std::max(RequiredBytes, 4096u);
+				BD.Usage = D3D11_USAGE_DYNAMIC;
+				BD.BindFlags = D3D11_BIND_INDEX_BUFFER;
+				BD.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				HRESULT Hr = Device->CreateBuffer(&BD, nullptr, &TriIB);
+				if (SUCCEEDED(Hr) && TriIB)
+				{
+					TriIBCapacityBytes = BD.ByteWidth;
+				}
+			}
+
+			void EnsureTriangleInstanceVB(uint32 RequiredBytes)
+			{
+				if (TriInstanceVB && TriInstanceVBCapacityBytes >= RequiredBytes)
+				{
+					return;
+				}
+				TriInstanceVB.Reset();
+				TriInstanceVBCapacityBytes = 0u;
+
+				D3D11_BUFFER_DESC BD{};
+				BD.ByteWidth = std::max(RequiredBytes, 4096u);
+				BD.Usage = D3D11_USAGE_DYNAMIC;
+				BD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+				BD.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				HRESULT Hr = Device->CreateBuffer(&BD, nullptr, &TriInstanceVB);
+				if (SUCCEEDED(Hr) && TriInstanceVB)
+				{
+					TriInstanceVBCapacityBytes = BD.ByteWidth;
+				}
+			}
+
+			void EnsureTrianglePipeline()
+			{
+				if (TriVS && TriPS && TriLayout)
+				{
+					return;
+				}
+
+				static const char* ShaderSrc =
+					R"(
+struct VSIn
+{
+	float4 Pos : POSITION;
+	float4 Color : COLOR0;
+	float4 InstRow0 : INSTANCE0;
+	float4 InstRow1 : INSTANCE1;
+	float4 InstRow2 : INSTANCE2;
+	float4 InstRow3 : INSTANCE3;
+	float4 InstColor : COLOR1;
+};
+struct VSOut
+{
+	float4 Pos : SV_Position;
+	float4 Color : COLOR0;
+};
+VSOut VSMain(VSIn In)
+{
+	VSOut O;
+	float4x4 M = float4x4(In.InstRow0, In.InstRow1, In.InstRow2, In.InstRow3);
+	O.Pos = mul(M, In.Pos);
+	O.Color = In.Color * In.InstColor;
+	return O;
+}
+float4 PSMain(VSOut In) : SV_Target
+{
+	return In.Color;
+}
+)";
+
+				ComPtr<ID3DBlob> VSBlob;
+				ComPtr<ID3DBlob> PSBlob;
+				ComPtr<ID3DBlob> Err;
+				UINT Flags = D3DCOMPILE_ENABLE_STRICTNESS;
+				HRESULT HrVS = D3DCompile(ShaderSrc, std::strlen(ShaderSrc), "SKTriangle", nullptr, nullptr, "VSMain", "vs_5_0", Flags, 0, &VSBlob, &Err);
+				if (FAILED(HrVS) || !VSBlob)
+				{
+					return;
+				}
+				HRESULT HrPS = D3DCompile(ShaderSrc, std::strlen(ShaderSrc), "SKTriangle", nullptr, nullptr, "PSMain", "ps_5_0", Flags, 0, &PSBlob, &Err);
+				if (FAILED(HrPS) || !PSBlob)
+				{
+					return;
+				}
+
+				Device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &TriVS);
+				Device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &TriPS);
+
+				D3D11_INPUT_ELEMENT_DESC IED[] = {
+					{ "POSITION",  0, DXGI_FORMAT_R32G32B32A32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA,   0 },
+					{ "COLOR",     0, DXGI_FORMAT_R8G8B8A8_UNORM,        0, 16, D3D11_INPUT_PER_VERTEX_DATA,   0 },
+					{ "INSTANCE",  0, DXGI_FORMAT_R32G32B32A32_FLOAT,    1,  0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "INSTANCE",  1, DXGI_FORMAT_R32G32B32A32_FLOAT,    1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "INSTANCE",  2, DXGI_FORMAT_R32G32B32A32_FLOAT,    1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "INSTANCE",  3, DXGI_FORMAT_R32G32B32A32_FLOAT,    1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+					{ "COLOR",     1, DXGI_FORMAT_R8G8B8A8_UNORM,        1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				};
+				Device->CreateInputLayout(IED, ARRAYSIZE(IED), VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), &TriLayout);
+
+				D3D11_BLEND_DESC BO{};
+				BO.RenderTarget[0].BlendEnable = FALSE;
+				BO.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+				Device->CreateBlendState(&BO, &TriBlendOpaque);
+
+				D3D11_BLEND_DESC BA{};
+				BA.RenderTarget[0].BlendEnable = TRUE;
+				BA.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+				BA.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+				BA.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+				BA.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+				BA.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+				BA.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+				BA.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+				Device->CreateBlendState(&BA, &TriBlendAlpha);
+
+				D3D11_RASTERIZER_DESC RCullBack{};
+				RCullBack.FillMode = D3D11_FILL_SOLID;
+				RCullBack.CullMode = D3D11_CULL_BACK;
+				RCullBack.DepthClipEnable = TRUE;
+				Device->CreateRasterizerState(&RCullBack, &TriRasterCullBack);
+
+				D3D11_RASTERIZER_DESC RCullNone{};
+				RCullNone.FillMode = D3D11_FILL_SOLID;
+				RCullNone.CullMode = D3D11_CULL_NONE;
+				RCullNone.DepthClipEnable = TRUE;
+				Device->CreateRasterizerState(&RCullNone, &TriRasterCullNone);
+
+				D3D11_DEPTH_STENCIL_DESC DWrite{};
+				DWrite.DepthEnable = TRUE;
+				DWrite.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+				DWrite.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+				Device->CreateDepthStencilState(&DWrite, &TriDepthOnWrite);
+
+				D3D11_DEPTH_STENCIL_DESC DRead{};
+				DRead.DepthEnable = TRUE;
+				DRead.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+				DRead.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+				Device->CreateDepthStencilState(&DRead, &TriDepthOnReadOnly);
+
+				D3D11_DEPTH_STENCIL_DESC DOff{};
+				DOff.DepthEnable = FALSE;
+				DOff.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+				DOff.DepthFunc = D3D11_COMPARISON_ALWAYS;
+				Device->CreateDepthStencilState(&DOff, &TriDepthOff);
+			}
+
 		private:
 			ComPtr<ID3D11Device> Device;
 			ComPtr<ID3D11DeviceContext> Context;
@@ -453,6 +787,24 @@ float4 PSMain(VSOut In) : SV_Target { return In.Color; }
 			ComPtr<ID3D11DepthStencilState> LineDepthOff;
 			ComPtr<ID3D11Buffer> LineVB;
 			uint32 LineVBCapacityBytes = 0;
+
+			ComPtr<ID3D11VertexShader> TriVS;
+			ComPtr<ID3D11PixelShader> TriPS;
+			ComPtr<ID3D11InputLayout> TriLayout;
+			ComPtr<ID3D11BlendState> TriBlendOpaque;
+			ComPtr<ID3D11BlendState> TriBlendAlpha;
+			ComPtr<ID3D11RasterizerState> TriRasterCullBack;
+			ComPtr<ID3D11RasterizerState> TriRasterCullNone;
+			ComPtr<ID3D11DepthStencilState> TriDepthOnWrite;
+			ComPtr<ID3D11DepthStencilState> TriDepthOnReadOnly;
+			ComPtr<ID3D11DepthStencilState> TriDepthOff;
+			ComPtr<ID3D11Buffer> TriVB;
+			ComPtr<ID3D11Buffer> TriIB;
+			ComPtr<ID3D11Buffer> TriInstanceVB;
+			uint32 TriVBCapacityBytes = 0;
+			uint32 TriIBCapacityBytes = 0;
+			uint32 TriInstanceVBCapacityBytes = 0;
+			TArray<uint32> TriangleScratchIndices;
 		};
 	}
 
@@ -646,6 +998,8 @@ float4 PSMain(VSOut In) : SV_Target { return In.Color; }
 		}
 
 		ComPtr<ID3D11RenderTargetView> RTV;
+		ComPtr<ID3D11Texture2D> Depth;
+		ComPtr<ID3D11DepthStencilView> DSV;
 		if (InDesc.Flags & SK_Tex_RenderTarget)
 		{
 			Hr = Impl->Device->CreateRenderTargetView(Tex.Get(), nullptr, &RTV);
@@ -654,9 +1008,31 @@ float4 PSMain(VSOut In) : SV_Target { return In.Color; }
 				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11RHI: CreateRenderTargetView failed: 0x%08X", (unsigned)Hr);
 				return nullptr;
 			}
+
+			D3D11_TEXTURE2D_DESC DepthDesc{};
+			DepthDesc.Width = Desc.Width;
+			DepthDesc.Height = Desc.Height;
+			DepthDesc.MipLevels = 1;
+			DepthDesc.ArraySize = 1;
+			DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			DepthDesc.SampleDesc.Count = 1;
+			DepthDesc.Usage = D3D11_USAGE_DEFAULT;
+			DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			Hr = Impl->Device->CreateTexture2D(&DepthDesc, nullptr, &Depth);
+			if (FAILED(Hr))
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11RHI: CreateTexture2D(TextureDepth) failed: 0x%08X", (unsigned)Hr);
+				return nullptr;
+			}
+			Hr = Impl->Device->CreateDepthStencilView(Depth.Get(), nullptr, &DSV);
+			if (FAILED(Hr))
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D11RHI: CreateDepthStencilView(TextureDepth) failed: 0x%08X", (unsigned)Hr);
+				return nullptr;
+			}
 		}
 
-		return std::make_unique<FSKD3D11RHITexture2D>(InDesc, Tex, RTV);
+		return std::make_unique<FSKD3D11RHITexture2D>(InDesc, Tex, RTV, Depth, DSV);
 	}
 
 	bool FSKD3D11RHIDevice::ReadbackTexturePixelRGBA8(ISKRHITexture2D& Texture, uint32 X, uint32 Y, uint8 OutRGBA[4])
@@ -745,6 +1121,7 @@ float4 PSMain(VSOut In) : SV_Target { return In.Color; }
 			void SetSwapChainRenderTarget(ISKRHISwapChain&) override {}
 			void SetRenderTargetTexture(ISKRHITexture2D&) override {}
 			void ClearRenderTarget(const FSKRHIClearColor&) override {}
+			void DrawLineList(const FSKRHILineVertex*, uint32, const FSKRHILineDrawParams&) override {}
 			void Flush() override {}
 		} G;
 		return G;

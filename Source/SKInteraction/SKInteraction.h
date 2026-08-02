@@ -24,6 +24,7 @@ namespace Skylark
 		// - SubId: topo (V/E/F) local id for fine-grained selection
 		uint64 ObjectId = 0;
 		uint32 SubId = 0;
+		FSKTopoId TopoId{};
 
 		FSKVector3f WorldPos{};
 		FSKVector3f WorldNormal{};

@@ -6,8 +6,21 @@
 #include <vector>
 
 #if defined(_WIN32)
+	#ifndef VK_USE_PLATFORM_WIN32_KHR
+		#define VK_USE_PLATFORM_WIN32_KHR
+	#endif
+#endif
+#ifndef VK_NO_PROTOTYPES
+	#define VK_NO_PROTOTYPES
+#endif
+#include <vulkan/vulkan.h>
+
+#if defined(_WIN32)
 	#ifndef WIN32_LEAN_AND_MEAN
 		#define WIN32_LEAN_AND_MEAN
+	#endif
+	#ifndef NOMINMAX
+		#define NOMINMAX
 	#endif
 	#include <windows.h>
 #else
@@ -16,332 +29,117 @@
 
 namespace Skylark
 {
+	// Vulkan RHI deliberately uses the official Vulkan headers instead of hand-written ABI
+	// structs.  The previous VulkanMini block duplicated Vk* structs manually; that is not
+	// safe on Windows because driver calls write into ABI-defined layouts that must match
+	// the SDK exactly.  A single wrong padding/alignment field can crash in
+	// vkGetPhysicalDeviceProperties, vkCreateSwapchainKHR, vkQueueSubmit, or present.
 	namespace VulkanMini
 	{
-		using VkFlags = uint32;
-		using VkBool32 = uint32;
-		using VkDeviceSize = uint64;
-		using VkResult = int32;
-		using VkStructureType = int32;
-		using VkQueueFlags = VkFlags;
-		using VkImageUsageFlags = VkFlags;
-		using VkInstanceCreateFlags = VkFlags;
-		using VkDeviceCreateFlags = VkFlags;
-		using VkDeviceQueueCreateFlags = VkFlags;
-		using VkSwapchainCreateFlagsKHR = VkFlags;
-		using VkSemaphoreCreateFlags = VkFlags;
-		using VkCommandPoolCreateFlags = VkFlags;
-		using VkCommandBufferUsageFlags = VkFlags;
-		using VkSurfaceTransformFlagsKHR = VkFlags;
-		using VkCompositeAlphaFlagsKHR = VkFlags;
-		using VkPresentModeKHR = int32;
-		using VkFormat = int32;
-		using VkColorSpaceKHR = int32;
-		using VkSharingMode = int32;
+		using ::VkAccessFlags;
+		using ::VkApplicationInfo;
+		using ::VkBool32;
+		using ::VkBufferMemoryBarrier;
+		using ::VkClearColorValue;
+		using ::VkColorSpaceKHR;
+		using ::VkCommandBuffer;
+		using ::VkCommandBufferAllocateInfo;
+		using ::VkCommandBufferBeginInfo;
+		using ::VkCommandBufferResetFlags;
+		using ::VkCommandBufferUsageFlags;
+		using ::VkCommandPool;
+		using ::VkCommandPoolCreateFlags;
+		using ::VkCommandPoolCreateInfo;
+		using ::VkCompositeAlphaFlagsKHR;
+		using ::VkDependencyFlags;
+		using ::VkDevice;
+		using ::VkDeviceCreateFlags;
+		using ::VkDeviceCreateInfo;
+		using ::VkDeviceQueueCreateFlags;
+		using ::VkDeviceQueueCreateInfo;
+		using ::VkDeviceSize;
+		using ::VkExtensionProperties;
+		using ::VkExtent2D;
+		using ::VkFence;
+		using ::VkFlags;
+		using ::VkFormat;
+		using ::VkImage;
+		using ::VkImageAspectFlags;
+		using ::VkImageLayout;
+		using ::VkImageMemoryBarrier;
+		using ::VkImageSubresourceRange;
+		using ::VkImageUsageFlags;
+		using ::VkInstance;
+		using ::VkInstanceCreateFlags;
+		using ::VkInstanceCreateInfo;
+		using ::VkMemoryBarrier;
+		using ::VkPhysicalDevice;
+		using ::VkPhysicalDeviceProperties;
+		using ::VkPipelineStageFlags;
+		using ::VkPresentInfoKHR;
+		using ::VkPresentModeKHR;
+		using ::VkQueue;
+		using ::VkQueueFamilyProperties;
+		using ::VkQueueFlags;
+		using ::VkResult;
+		using ::VkSemaphore;
+		using ::VkSemaphoreCreateFlags;
+		using ::VkSemaphoreCreateInfo;
+		using ::VkSharingMode;
+		using ::VkStructureType;
+		using ::VkSubmitInfo;
+		using ::VkSurfaceCapabilitiesKHR;
+		using ::VkSurfaceFormatKHR;
+		using ::VkSurfaceKHR;
+		using ::VkSurfaceTransformFlagsKHR;
+		using ::VkSwapchainCreateFlagsKHR;
+		using ::VkSwapchainCreateInfoKHR;
+		using ::VkSwapchainKHR;
+#if defined(_WIN32)
+		using ::VkWin32SurfaceCreateInfoKHR;
+#endif
 
-		struct VkInstance_T;
-		struct VkPhysicalDevice_T;
-		struct VkDevice_T;
-		struct VkQueue_T;
-		struct VkImage_T;
-		struct VkSurfaceKHR_T;
-		struct VkSwapchainKHR_T;
-		struct VkSemaphore_T;
-		struct VkFence_T;
-		struct VkCommandPool_T;
-		struct VkCommandBuffer_T;
+		using ::PFN_vkVoidFunction;
+		using ::PFN_vkGetInstanceProcAddr;
+		using ::PFN_vkCreateInstance;
+		using ::PFN_vkEnumerateInstanceExtensionProperties;
+		using ::PFN_vkDestroyInstance;
+		using ::PFN_vkEnumeratePhysicalDevices;
+		using ::PFN_vkGetPhysicalDeviceProperties;
+		using ::PFN_vkGetPhysicalDeviceQueueFamilyProperties;
+		using ::PFN_vkEnumerateDeviceExtensionProperties;
+		using ::PFN_vkCreateDevice;
+		using ::PFN_vkGetDeviceProcAddr;
+		using ::PFN_vkDestroyDevice;
+		using ::PFN_vkGetDeviceQueue;
+		using ::PFN_vkGetPhysicalDeviceSurfaceSupportKHR;
+		using ::PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+		using ::PFN_vkGetPhysicalDeviceSurfaceFormatsKHR;
+		using ::PFN_vkGetPhysicalDeviceSurfacePresentModesKHR;
+		using ::PFN_vkDestroySurfaceKHR;
+#if defined(_WIN32)
+		using ::PFN_vkCreateWin32SurfaceKHR;
+#endif
+		using ::PFN_vkCreateSwapchainKHR;
+		using ::PFN_vkDestroySwapchainKHR;
+		using ::PFN_vkGetSwapchainImagesKHR;
+		using ::PFN_vkAcquireNextImageKHR;
+		using ::PFN_vkQueuePresentKHR;
+		using ::PFN_vkCreateSemaphore;
+		using ::PFN_vkDestroySemaphore;
+		using ::PFN_vkDeviceWaitIdle;
+		using ::PFN_vkCreateCommandPool;
+		using ::PFN_vkDestroyCommandPool;
+		using ::PFN_vkAllocateCommandBuffers;
+		using ::PFN_vkBeginCommandBuffer;
+		using ::PFN_vkEndCommandBuffer;
+		using ::PFN_vkQueueSubmit;
+		using ::PFN_vkResetCommandBuffer;
+		using ::PFN_vkCmdPipelineBarrier;
+		using ::PFN_vkCmdClearColorImage;
 
-		using VkInstance = VkInstance_T*;
-		using VkPhysicalDevice = VkPhysicalDevice_T*;
-		using VkDevice = VkDevice_T*;
-		using VkQueue = VkQueue_T*;
-		using VkImage = VkImage_T*;
-		using VkSurfaceKHR = VkSurfaceKHR_T*;
-		using VkSwapchainKHR = VkSwapchainKHR_T*;
-		using VkSemaphore = VkSemaphore_T*;
-		using VkFence = VkFence_T*;
-		using VkCommandPool = VkCommandPool_T*;
-		using VkCommandBuffer = VkCommandBuffer_T*;
-
-		constexpr VkResult VK_SUCCESS = 0;
-		constexpr VkResult VK_SUBOPTIMAL_KHR = 1000001003;
-		constexpr VkResult VK_ERROR_INITIALIZATION_FAILED = -3;
-		constexpr VkResult VK_ERROR_LAYER_NOT_PRESENT = -6;
-		constexpr VkResult VK_ERROR_EXTENSION_NOT_PRESENT = -7;
-		constexpr VkResult VK_ERROR_INCOMPATIBLE_DRIVER = -9;
-		constexpr VkResult VK_ERROR_OUT_OF_DATE_KHR = -1000001004;
-
-		constexpr VkBool32 VK_FALSE = 0;
-		constexpr VkBool32 VK_TRUE = 1;
-
-		constexpr VkQueueFlags VK_QUEUE_GRAPHICS_BIT = 0x00000001u;
-		constexpr VkImageUsageFlags VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010u;
-		constexpr VkCommandPoolCreateFlags VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT = 0x00000002u;
-		constexpr VkCommandBufferUsageFlags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT = 0x00000001u;
-		constexpr VkSurfaceTransformFlagsKHR VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR = 0x00000001u;
-		constexpr VkCompositeAlphaFlagsKHR VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR = 0x00000001u;
-		constexpr VkSharingMode VK_SHARING_MODE_EXCLUSIVE = 0;
-		constexpr VkPresentModeKHR VK_PRESENT_MODE_MAILBOX_KHR = 1;
-		constexpr VkPresentModeKHR VK_PRESENT_MODE_FIFO_KHR = 2;
-		constexpr VkFormat VK_FORMAT_B8G8R8A8_UNORM = 44;
-		constexpr VkColorSpaceKHR VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0;
+		constexpr VkFormat VK_FORMAT_B8G8R8A8_UNORM = ::VK_FORMAT_B8G8R8A8_UNORM;
 		constexpr uint32 VK_SURFACE_UNDEFINED_EXTENT = 0xFFFFFFFFu;
-
-		enum : VkStructureType
-		{
-			VK_STRUCTURE_TYPE_APPLICATION_INFO = 0,
-			VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO = 1,
-			VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO = 2,
-			VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO = 3,
-			VK_STRUCTURE_TYPE_SUBMIT_INFO = 4,
-			VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO = 9,
-			VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO = 38,
-			VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO = 39,
-			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO = 40,
-			VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO = 42,
-			VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
-			VK_STRUCTURE_TYPE_PRESENT_INFO_KHR = 1000001001,
-			VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
-		};
-
-		enum : int32
-		{
-			VK_COMMAND_BUFFER_LEVEL_PRIMARY = 0,
-		};
-
-		struct VkApplicationInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			const char* pApplicationName;
-			uint32 applicationVersion;
-			const char* pEngineName;
-			uint32 engineVersion;
-			uint32 apiVersion;
-		};
-
-		struct VkInstanceCreateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkInstanceCreateFlags flags;
-			const VkApplicationInfo* pApplicationInfo;
-			uint32 enabledLayerCount;
-			const char* const* ppEnabledLayerNames;
-			uint32 enabledExtensionCount;
-			const char* const* ppEnabledExtensionNames;
-		};
-
-		struct VkDeviceQueueCreateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkDeviceQueueCreateFlags flags;
-			uint32 queueFamilyIndex;
-			uint32 queueCount;
-			const float* pQueuePriorities;
-		};
-
-		struct VkDeviceCreateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkDeviceCreateFlags flags;
-			uint32 queueCreateInfoCount;
-			const VkDeviceQueueCreateInfo* pQueueCreateInfos;
-			uint32 enabledLayerCount;
-			const char* const* ppEnabledLayerNames;
-			uint32 enabledExtensionCount;
-			const char* const* ppEnabledExtensionNames;
-			const void* pEnabledFeatures;
-		};
-
-		struct VkQueueFamilyProperties
-		{
-			VkQueueFlags queueFlags;
-			uint32 queueCount;
-			uint32 timestampValidBits;
-			struct
-			{
-				uint32 width;
-				uint32 height;
-				uint32 depth;
-			} minImageTransferGranularity;
-		};
-
-		struct VkPhysicalDeviceLimits { uint8 Reserved[512]; };
-		struct VkPhysicalDeviceSparseProperties { VkBool32 Reserved[5]; };
-
-		struct VkPhysicalDeviceProperties
-		{
-			uint32 apiVersion;
-			uint32 driverVersion;
-			uint32 vendorID;
-			uint32 deviceID;
-			uint32 deviceType;
-			char deviceName[256];
-			uint8 pipelineCacheUUID[16];
-			VkPhysicalDeviceLimits limits;
-			VkPhysicalDeviceSparseProperties sparseProperties;
-		};
-
-		struct VkExtensionProperties
-		{
-			char extensionName[256];
-			uint32 specVersion;
-		};
-
-		struct VkExtent2D
-		{
-			uint32 width;
-			uint32 height;
-		};
-
-		struct VkSurfaceCapabilitiesKHR
-		{
-			uint32 minImageCount;
-			uint32 maxImageCount;
-			VkExtent2D currentExtent;
-			VkExtent2D minImageExtent;
-			VkExtent2D maxImageExtent;
-			uint32 maxImageArrayLayers;
-			VkSurfaceTransformFlagsKHR supportedTransforms;
-			VkSurfaceTransformFlagsKHR currentTransform;
-			VkCompositeAlphaFlagsKHR supportedCompositeAlpha;
-			VkImageUsageFlags supportedUsageFlags;
-		};
-
-		struct VkSurfaceFormatKHR
-		{
-			VkFormat format;
-			VkColorSpaceKHR colorSpace;
-		};
-
-		struct VkSwapchainCreateInfoKHR
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkSwapchainCreateFlagsKHR flags;
-			VkSurfaceKHR surface;
-			uint32 minImageCount;
-			VkFormat imageFormat;
-			VkColorSpaceKHR imageColorSpace;
-			VkExtent2D imageExtent;
-			uint32 imageArrayLayers;
-			VkImageUsageFlags imageUsage;
-			VkSharingMode imageSharingMode;
-			uint32 queueFamilyIndexCount;
-			const uint32* pQueueFamilyIndices;
-			VkSurfaceTransformFlagsKHR preTransform;
-			VkCompositeAlphaFlagsKHR compositeAlpha;
-			VkPresentModeKHR presentMode;
-			VkBool32 clipped;
-			VkSwapchainKHR oldSwapchain;
-		};
-
-		struct VkCommandPoolCreateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkCommandPoolCreateFlags flags;
-			uint32 queueFamilyIndex;
-		};
-
-		struct VkCommandBufferAllocateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkCommandPool commandPool;
-			int32 level;
-			uint32 commandBufferCount;
-		};
-
-		struct VkCommandBufferBeginInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkCommandBufferUsageFlags flags;
-			const void* pInheritanceInfo;
-		};
-
-		struct VkSubmitInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			uint32 waitSemaphoreCount;
-			const VkSemaphore* pWaitSemaphores;
-			const VkFlags* pWaitDstStageMask;
-			uint32 commandBufferCount;
-			const VkCommandBuffer* pCommandBuffers;
-			uint32 signalSemaphoreCount;
-			const VkSemaphore* pSignalSemaphores;
-		};
-
-		struct VkPresentInfoKHR
-		{
-			VkStructureType sType;
-			const void* pNext;
-			uint32 waitSemaphoreCount;
-			const VkSemaphore* pWaitSemaphores;
-			uint32 swapchainCount;
-			const VkSwapchainKHR* pSwapchains;
-			const uint32* pImageIndices;
-			VkResult* pResults;
-		};
-
-		struct VkSemaphoreCreateInfo
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkSemaphoreCreateFlags flags;
-		};
-
-#if defined(_WIN32)
-		struct VkWin32SurfaceCreateInfoKHR
-		{
-			VkStructureType sType;
-			const void* pNext;
-			VkFlags flags;
-			HINSTANCE hinstance;
-			HWND hwnd;
-		};
-#endif
-
-		using PFN_vkVoidFunction = void(*)();
-		using PFN_vkGetInstanceProcAddr = PFN_vkVoidFunction(*)(VkInstance, const char*);
-		using PFN_vkCreateInstance = VkResult(*)(const VkInstanceCreateInfo*, const void*, VkInstance*);
-		using PFN_vkEnumerateInstanceExtensionProperties = VkResult(*)(const char*, uint32*, VkExtensionProperties*);
-		using PFN_vkDestroyInstance = void(*)(VkInstance, const void*);
-		using PFN_vkEnumeratePhysicalDevices = VkResult(*)(VkInstance, uint32*, VkPhysicalDevice*);
-		using PFN_vkGetPhysicalDeviceProperties = void(*)(VkPhysicalDevice, VkPhysicalDeviceProperties*);
-		using PFN_vkGetPhysicalDeviceQueueFamilyProperties = void(*)(VkPhysicalDevice, uint32*, VkQueueFamilyProperties*);
-		using PFN_vkEnumerateDeviceExtensionProperties = VkResult(*)(VkPhysicalDevice, const char*, uint32*, VkExtensionProperties*);
-		using PFN_vkCreateDevice = VkResult(*)(VkPhysicalDevice, const VkDeviceCreateInfo*, const void*, VkDevice*);
-		using PFN_vkGetDeviceProcAddr = PFN_vkVoidFunction(*)(VkDevice, const char*);
-		using PFN_vkDestroyDevice = void(*)(VkDevice, const void*);
-		using PFN_vkGetDeviceQueue = void(*)(VkDevice, uint32, uint32, VkQueue*);
-		using PFN_vkGetPhysicalDeviceSurfaceSupportKHR = VkResult(*)(VkPhysicalDevice, uint32, VkSurfaceKHR, VkBool32*);
-		using PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = VkResult(*)(VkPhysicalDevice, VkSurfaceKHR, VkSurfaceCapabilitiesKHR*);
-		using PFN_vkGetPhysicalDeviceSurfaceFormatsKHR = VkResult(*)(VkPhysicalDevice, VkSurfaceKHR, uint32*, VkSurfaceFormatKHR*);
-		using PFN_vkGetPhysicalDeviceSurfacePresentModesKHR = VkResult(*)(VkPhysicalDevice, VkSurfaceKHR, uint32*, VkPresentModeKHR*);
-		using PFN_vkDestroySurfaceKHR = void(*)(VkInstance, VkSurfaceKHR, const void*);
-#if defined(_WIN32)
-		using PFN_vkCreateWin32SurfaceKHR = VkResult(*)(VkInstance, const VkWin32SurfaceCreateInfoKHR*, const void*, VkSurfaceKHR*);
-#endif
-		using PFN_vkCreateSwapchainKHR = VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const void*, VkSwapchainKHR*);
-		using PFN_vkDestroySwapchainKHR = void(*)(VkDevice, VkSwapchainKHR, const void*);
-		using PFN_vkGetSwapchainImagesKHR = VkResult(*)(VkDevice, VkSwapchainKHR, uint32*, VkImage*);
-		using PFN_vkAcquireNextImageKHR = VkResult(*)(VkDevice, VkSwapchainKHR, uint64, VkSemaphore, VkFence, uint32*);
-		using PFN_vkQueuePresentKHR = VkResult(*)(VkQueue, const VkPresentInfoKHR*);
-		using PFN_vkCreateSemaphore = VkResult(*)(VkDevice, const VkSemaphoreCreateInfo*, const void*, VkSemaphore*);
-		using PFN_vkDestroySemaphore = void(*)(VkDevice, VkSemaphore, const void*);
-		using PFN_vkDeviceWaitIdle = VkResult(*)(VkDevice);
-		using PFN_vkCreateCommandPool = VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const void*, VkCommandPool*);
-		using PFN_vkDestroyCommandPool = void(*)(VkDevice, VkCommandPool, const void*);
-		using PFN_vkAllocateCommandBuffers = VkResult(*)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*);
-		using PFN_vkBeginCommandBuffer = VkResult(*)(VkCommandBuffer, const VkCommandBufferBeginInfo*);
-		using PFN_vkEndCommandBuffer = VkResult(*)(VkCommandBuffer);
-		using PFN_vkQueueSubmit = VkResult(*)(VkQueue, uint32, const VkSubmitInfo*, VkFence);
 
 		struct FLoader
 		{
@@ -423,7 +221,7 @@ namespace Skylark
 		{
 			for (const auto& Ext : Extensions)
 			{
-				if (std::strncmp(Ext.extensionName, Name, sizeof(Ext.extensionName)) == 0)
+				if (std::strncmp(Ext.extensionName, Name, VK_MAX_EXTENSION_NAME_SIZE) == 0)
 				{
 					return true;
 				}
@@ -501,6 +299,10 @@ namespace Skylark
 		VulkanMini::VkSurfaceKHR Surface = nullptr;
 		VulkanMini::VkSwapchainKHR Swapchain = nullptr;
 		VulkanMini::VkSemaphore AcquireSemaphore = nullptr;
+		VulkanMini::VkSemaphore RenderFinishedSemaphore = nullptr;
+		VulkanMini::VkFormat ImageFormat = VulkanMini::VK_FORMAT_B8G8R8A8_UNORM;
+		bool bSupportsTransferDst = false;
+		std::vector<VulkanMini::VkImageLayout> ImageLayouts;
 
 		friend class FSKVulkanRHIDevice;
 		friend class FSKVulkanCommandList;
@@ -590,9 +392,51 @@ namespace Skylark
 			RecordedVertexCount = VertexCount;
 		}
 
+
+		void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices;
+			RecordedVertexCount = VertexCount;
+			RecordedIndexCount = 0;
+			RecordedInstanceCount = 1;
+			bRecordedTriangleDraw = (VertexCount >= 3);
+			bRecordedIndexed = false;
+			bRecordedInstanced = false;
+			LastTriangleParams = Params;
+		}
+
+		void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices;
+			(void)Indices;
+			RecordedVertexCount = VertexCount;
+			RecordedIndexCount = IndexCount;
+			RecordedInstanceCount = 1;
+			bRecordedTriangleDraw = (IndexCount >= 3);
+			bRecordedIndexed = true;
+			bRecordedInstanced = false;
+			LastTriangleParams = Params;
+		}
+
+		void DrawIndexedInstancedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleInstance* Instances, uint32 InstanceCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices;
+			(void)Indices;
+			(void)Instances;
+			RecordedVertexCount = VertexCount;
+			RecordedIndexCount = IndexCount;
+			RecordedInstanceCount = InstanceCount;
+			bRecordedTriangleDraw = (IndexCount >= 3) && (InstanceCount > 0);
+			bRecordedIndexed = true;
+			bRecordedInstanced = (InstanceCount > 1);
+			LastTriangleParams = Params;
+		}
+
 		void Flush() override;
 
 	private:
+		friend class FSKVulkanRHIDevice;
+
 		FSKVulkanRHIDevice* Owner = nullptr;
 		FSKVulkanSwapChain* BoundSwapChain = nullptr;
 		FSKVulkanTexture2D* BoundTexture = nullptr;
@@ -600,6 +444,12 @@ namespace Skylark
 		bool bInsideRenderPass = false;
 		uint32 RecordedVertexCount = 0;
 		uint32 RecordedFirstVertex = 0;
+		uint32 RecordedIndexCount = 0;
+		uint32 RecordedInstanceCount = 0;
+		bool bRecordedTriangleDraw = false;
+		bool bRecordedIndexed = false;
+		bool bRecordedInstanced = false;
+		FSKRHITriangleDrawParams LastTriangleParams{};
 	};
 
 	class FSKVulkanShaderModule final : public ISKRHIShaderModule
@@ -698,7 +548,7 @@ namespace Skylark
 			AppInfo.applicationVersion = 17u;
 			AppInfo.pEngineName = "SkylarkEngine";
 			AppInfo.engineVersion = 17u;
-			AppInfo.apiVersion = 0;
+			AppInfo.apiVersion = VK_API_VERSION_1_0;
 
 			VkInstanceCreateInfo InstanceInfo{};
 			InstanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -714,7 +564,10 @@ namespace Skylark
 			}
 
 			LoadInstanceFunctions();
-			if (!EnumeratePhysicalDevices || !GetPhysicalDeviceQueueFamilyProperties || !CreateDeviceFn || !DestroyInstanceFn)
+			// Refresh vkGetDeviceProcAddr through the created instance. Some Windows Vulkan loaders do not expose
+			// a complete global function table before an instance exists.
+			GetLoader().GetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(GetInstanceProc(Instance, "vkGetDeviceProcAddr"));
+			if (!EnumeratePhysicalDevices || !GetPhysicalDeviceQueueFamilyProperties || !CreateDeviceFn || !DestroyInstanceFn || !GetLoader().GetDeviceProcAddr)
 			{
 				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: instance function bootstrap incomplete.");
 				Shutdown();
@@ -843,8 +696,12 @@ namespace Skylark
 			SK_LOG(
 				GLogSkylark,
 				ESKLogVerbosity::Display,
-				"SKVulkanRHI: device ready. Swapchain path %s. Pipeline scaffolds: %zu.",
-				bPresentationRuntimeReady ? "enabled" : "disabled",
+				"SKVulkanRHI: device ready. Device=%s GraphicsQueueFamily=%u SurfaceExt=%s SwapchainExt=%s PresentRuntime=%s PipelineScaffolds=%zu.",
+				PhysicalDeviceProperties.deviceName,
+				GraphicsQueueFamilyIndex,
+				bSurfaceInstanceExtensionsEnabled ? "on" : "off",
+				bSwapchainDeviceExtensionEnabled ? "on" : "off",
+				bPresentationRuntimeReady ? "on" : "off",
 				static_cast<SIZE_T>(PipelineScaffolds.size()));
 			return true;
 		}
@@ -882,6 +739,9 @@ namespace Skylark
 			BeginCommandBufferFn = nullptr;
 			EndCommandBufferFn = nullptr;
 			QueueSubmitFn = nullptr;
+			ResetCommandBufferFn = nullptr;
+			CmdPipelineBarrierFn = nullptr;
+			CmdClearColorImageFn = nullptr;
 
 			if (Instance && DestroyInstanceFn)
 			{
@@ -977,8 +837,15 @@ namespace Skylark
 				InitializeSwapChain(SwapChain);
 			}
 
-			if (!SwapChain.Swapchain || !AcquireNextImageFn || !QueuePresentFn)
+			if (!SwapChain.Swapchain || !SwapChain.AcquireSemaphore || !SwapChain.RenderFinishedSemaphore || !SwapChain.bSupportsTransferDst)
 			{
+				return;
+			}
+
+			if (!AcquireNextImageFn || !QueuePresentFn || !ResetCommandBufferFn || !BeginCommandBufferFn
+				|| !EndCommandBufferFn || !QueueSubmitFn || !CmdPipelineBarrierFn || !CmdClearColorImageFn)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: present chain function table is incomplete.");
 				return;
 			}
 
@@ -1002,15 +869,133 @@ namespace Skylark
 				return;
 			}
 
-			const VkSemaphore WaitSemaphore = SwapChain.AcquireSemaphore;
-			const VkSwapchainKHR SwapchainHandle = SwapChain.Swapchain;
-			const uint32 ImageIndex = SwapChain.AcquiredImageIndex;
+			if (SwapChain.AcquiredImageIndex >= SwapChain.Images.size() || SwapChain.AcquiredImageIndex >= SwapChain.ImageLayouts.size())
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: acquired image index is outside swapchain image arrays.");
+				SwapChain.bResizeRequested = true;
+				return;
+			}
 
+			VkCommandBuffer Cmd = ImmediateCommandBuffer;
+			if (!Cmd)
+			{
+				return;
+			}
+
+			if (DeviceWaitIdleFn)
+			{
+				DeviceWaitIdleFn(Device);
+			}
+
+			const VkResult ResetResult = ResetCommandBufferFn(Cmd, 0u);
+			if (ResetResult != VK_SUCCESS)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkResetCommandBuffer before present failed (%d).", (int32)ResetResult);
+				return;
+			}
+
+			VkCommandBufferBeginInfo BeginInfo{};
+			BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			BeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			const VkResult BeginResult = BeginCommandBufferFn(Cmd, &BeginInfo);
+			if (BeginResult != VK_SUCCESS)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkBeginCommandBuffer for present failed (%d).", (int32)BeginResult);
+				return;
+			}
+
+			const uint32 ImageIndex = SwapChain.AcquiredImageIndex;
+			const VkImage Image = SwapChain.Images[ImageIndex];
+			const VkImageLayout OldLayout = SwapChain.ImageLayouts[ImageIndex];
+
+			VkImageSubresourceRange ColorRange{};
+			ColorRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			ColorRange.baseMipLevel = 0u;
+			ColorRange.levelCount = 1u;
+			ColorRange.baseArrayLayer = 0u;
+			ColorRange.layerCount = 1u;
+
+			VkImageMemoryBarrier ToTransfer{};
+			ToTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			ToTransfer.srcAccessMask = (OldLayout == VK_IMAGE_LAYOUT_UNDEFINED) ? 0u : VK_ACCESS_MEMORY_READ_BIT;
+			ToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			ToTransfer.oldLayout = OldLayout;
+			ToTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			ToTransfer.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			ToTransfer.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			ToTransfer.image = Image;
+			ToTransfer.subresourceRange = ColorRange;
+
+			CmdPipelineBarrierFn(
+				Cmd,
+				(OldLayout == VK_IMAGE_LAYOUT_UNDEFINED) ? VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0u,
+				0u, nullptr,
+				0u, nullptr,
+				1u, &ToTransfer);
+
+			VkClearColorValue ClearValue{};
+			ClearValue.float32[0] = std::clamp(SwapChain.PendingClear.R, 0.0f, 1.0f);
+			ClearValue.float32[1] = std::clamp(SwapChain.PendingClear.G, 0.0f, 1.0f);
+			ClearValue.float32[2] = std::clamp(SwapChain.PendingClear.B, 0.0f, 1.0f);
+			ClearValue.float32[3] = std::clamp(SwapChain.PendingClear.A, 0.0f, 1.0f);
+
+			CmdClearColorImageFn(Cmd, Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &ClearValue, 1u, &ColorRange);
+
+			VkImageMemoryBarrier ToPresent{};
+			ToPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			ToPresent.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			ToPresent.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			ToPresent.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			ToPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			ToPresent.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			ToPresent.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			ToPresent.image = Image;
+			ToPresent.subresourceRange = ColorRange;
+
+			CmdPipelineBarrierFn(
+				Cmd,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				0u,
+				0u, nullptr,
+				0u, nullptr,
+				1u, &ToPresent);
+
+			const VkResult EndResult = EndCommandBufferFn(Cmd);
+			if (EndResult != VK_SUCCESS)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkEndCommandBuffer for present failed (%d).", (int32)EndResult);
+				return;
+			}
+
+			const VkSemaphore WaitSemaphore = SwapChain.AcquireSemaphore;
+			const VkSemaphore SignalSemaphore = SwapChain.RenderFinishedSemaphore;
+			const VkPipelineStageFlags WaitStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			VkSubmitInfo SubmitInfo{};
+			SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			SubmitInfo.waitSemaphoreCount = 1u;
+			SubmitInfo.pWaitSemaphores = &WaitSemaphore;
+			SubmitInfo.pWaitDstStageMask = &WaitStage;
+			SubmitInfo.commandBufferCount = 1u;
+			SubmitInfo.pCommandBuffers = &Cmd;
+			SubmitInfo.signalSemaphoreCount = 1u;
+			SubmitInfo.pSignalSemaphores = &SignalSemaphore;
+
+			const VkResult SubmitResult = QueueSubmitFn(GraphicsQueue, 1u, &SubmitInfo, nullptr);
+			if (SubmitResult != VK_SUCCESS)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkQueueSubmit for present clear failed (%d).", (int32)SubmitResult);
+				return;
+			}
+
+			const VkSwapchainKHR SwapchainHandle = SwapChain.Swapchain;
 			VkPresentInfoKHR PresentInfo{};
 			PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-			PresentInfo.waitSemaphoreCount = 1;
-			PresentInfo.pWaitSemaphores = &WaitSemaphore;
-			PresentInfo.swapchainCount = 1;
+			PresentInfo.waitSemaphoreCount = 1u;
+			PresentInfo.pWaitSemaphores = &SignalSemaphore;
+			PresentInfo.swapchainCount = 1u;
 			PresentInfo.pSwapchains = &SwapchainHandle;
 			PresentInfo.pImageIndices = &ImageIndex;
 
@@ -1018,12 +1003,19 @@ namespace Skylark
 			if (PresentResult == VK_ERROR_OUT_OF_DATE_KHR || PresentResult == VK_SUBOPTIMAL_KHR)
 			{
 				SwapChain.bResizeRequested = true;
-				return;
 			}
-
-			if (PresentResult != VK_SUCCESS)
+			else if (PresentResult != VK_SUCCESS)
 			{
 				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkQueuePresentKHR failed (%d).", (int32)PresentResult);
+			}
+			else
+			{
+				SwapChain.ImageLayouts[ImageIndex] = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			}
+
+			if (DeviceWaitIdleFn)
+			{
+				DeviceWaitIdleFn(Device);
 			}
 		}
 
@@ -1034,6 +1026,12 @@ namespace Skylark
 			{
 				DeviceWaitIdleFn(Device);
 			}
+
+			if (SwapChain.RenderFinishedSemaphore && DestroySemaphoreFn && Device)
+			{
+				DestroySemaphoreFn(Device, SwapChain.RenderFinishedSemaphore, nullptr);
+			}
+			SwapChain.RenderFinishedSemaphore = nullptr;
 
 			if (SwapChain.AcquireSemaphore && DestroySemaphoreFn && Device)
 			{
@@ -1053,7 +1051,9 @@ namespace Skylark
 			}
 			SwapChain.Surface = nullptr;
 			SwapChain.Images.clear();
+			SwapChain.ImageLayouts.clear();
 			SwapChain.ImageCount = 0;
+			SwapChain.bSupportsTransferDst = false;
 			SwapChain.bInitialized = false;
 			SwapChain.bHeadless = true;
 		}
@@ -1175,6 +1175,15 @@ namespace Skylark
 			QueueSubmitFn = GetLoader().GetDeviceProcAddr
 				? reinterpret_cast<PFN_vkQueueSubmit>(GetLoader().GetDeviceProcAddr(Device, "vkQueueSubmit"))
 				: nullptr;
+			ResetCommandBufferFn = GetLoader().GetDeviceProcAddr
+				? reinterpret_cast<PFN_vkResetCommandBuffer>(GetLoader().GetDeviceProcAddr(Device, "vkResetCommandBuffer"))
+				: nullptr;
+			CmdPipelineBarrierFn = GetLoader().GetDeviceProcAddr
+				? reinterpret_cast<PFN_vkCmdPipelineBarrier>(GetLoader().GetDeviceProcAddr(Device, "vkCmdPipelineBarrier"))
+				: nullptr;
+			CmdClearColorImageFn = GetLoader().GetDeviceProcAddr
+				? reinterpret_cast<PFN_vkCmdClearColorImage>(GetLoader().GetDeviceProcAddr(Device, "vkCmdClearColorImage"))
+				: nullptr;
 
 			bPresentationRuntimeReady = bSurfaceInstanceExtensionsEnabled
 				&& bSwapchainDeviceExtensionEnabled
@@ -1191,6 +1200,12 @@ namespace Skylark
 				&& CreateSemaphoreFn
 				&& DestroySemaphoreFn
 				&& DeviceWaitIdleFn
+				&& BeginCommandBufferFn
+				&& EndCommandBufferFn
+				&& QueueSubmitFn
+				&& ResetCommandBufferFn
+				&& CmdPipelineBarrierFn
+				&& CmdClearColorImageFn
 #if defined(_WIN32)
 				&& CreateWin32SurfaceFn
 #endif
@@ -1200,7 +1215,7 @@ namespace Skylark
 		bool InitializeSubmissionObjects()
 		{
 			using namespace VulkanMini;
-			if (!Device || !CreateCommandPoolFn || !DestroyCommandPoolFn || !AllocateCommandBuffersFn || !BeginCommandBufferFn || !EndCommandBufferFn || !QueueSubmitFn)
+			if (!Device || !CreateCommandPoolFn || !DestroyCommandPoolFn || !AllocateCommandBuffersFn || !BeginCommandBufferFn || !EndCommandBufferFn || !QueueSubmitFn || !ResetCommandBufferFn)
 			{
 				return false;
 			}
@@ -1244,9 +1259,24 @@ namespace Skylark
 		bool SubmitImmediateCommandList(const FSKVulkanCommandList& CommandList)
 		{
 			using namespace VulkanMini;
-			(void)CommandList;
-			if (!Device || !GraphicsQueue || !ImmediateCommandBuffer || !BeginCommandBufferFn || !EndCommandBufferFn || !QueueSubmitFn)
+			if (CommandList.bRecordedTriangleDraw)
 			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Verbose, "SKVulkanRHI: recorded %s triangle draw (V=%u I=%u Inst=%u).", CommandList.bRecordedInstanced ? "instanced" : (CommandList.bRecordedIndexed ? "indexed" : "non-indexed"), CommandList.RecordedVertexCount, CommandList.RecordedIndexCount, CommandList.RecordedInstanceCount);
+			}
+			if (!Device || !GraphicsQueue || !ImmediateCommandBuffer || !ResetCommandBufferFn || !BeginCommandBufferFn || !EndCommandBufferFn || !QueueSubmitFn)
+			{
+				return false;
+			}
+
+			if (DeviceWaitIdleFn)
+			{
+				DeviceWaitIdleFn(Device);
+			}
+
+			const VkResult ResetResult = ResetCommandBufferFn(ImmediateCommandBuffer, 0u);
+			if (ResetResult != VK_SUCCESS)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: vkResetCommandBuffer failed (%d).", (int32)ResetResult);
 				return false;
 			}
 
@@ -1295,6 +1325,22 @@ namespace Skylark
 			LineOverlay.Stages.push_back({ "VS", {} });
 			LineOverlay.Stages.push_back({ "PS", {} });
 			PipelineScaffolds.push_back(std::move(LineOverlay));
+
+			FSKVulkanPipelineScaffold SolidTriangles;
+			SolidTriangles.DebugName = "Vulkan.SolidTriangles";
+			SolidTriangles.bGraphics = true;
+			SolidTriangles.bPresentPath = false;
+			SolidTriangles.Stages.push_back({ "VS", {} });
+			SolidTriangles.Stages.push_back({ "PS", {} });
+			PipelineScaffolds.push_back(std::move(SolidTriangles));
+
+			FSKVulkanPipelineScaffold InstancedTriangles;
+			InstancedTriangles.DebugName = "Vulkan.InstancedTriangles";
+			InstancedTriangles.bGraphics = true;
+			InstancedTriangles.bPresentPath = false;
+			InstancedTriangles.Stages.push_back({ "VS", {} });
+			InstancedTriangles.Stages.push_back({ "PS", {} });
+			PipelineScaffolds.push_back(std::move(InstancedTriangles));
 
 			FSKVulkanPipelineScaffold PresentBlit;
 			PresentBlit.DebugName = "Vulkan.PresentBlit";
@@ -1402,6 +1448,13 @@ namespace Skylark
 				ChosenExtent.height = std::clamp(SwapChain.Desc.Height, Caps.minImageExtent.height, Caps.maxImageExtent.height);
 			}
 
+			if ((Caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) == 0u)
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKVulkanRHI: swapchain does not support VK_IMAGE_USAGE_TRANSFER_DST_BIT; minimal present clear path cannot run.");
+				DestroySwapChain(SwapChain);
+				return false;
+			}
+
 			uint32 DesiredImageCount = std::max(2u, Caps.minImageCount + 1u);
 			if (Caps.maxImageCount > 0 && DesiredImageCount > Caps.maxImageCount)
 			{
@@ -1416,7 +1469,7 @@ namespace Skylark
 			SwapchainInfo.imageColorSpace = ChosenFormat.colorSpace;
 			SwapchainInfo.imageExtent = ChosenExtent;
 			SwapchainInfo.imageArrayLayers = 1;
-			SwapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			SwapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 			SwapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			SwapchainInfo.preTransform = Caps.currentTransform ? Caps.currentTransform : VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 			SwapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -1431,11 +1484,19 @@ namespace Skylark
 				return false;
 			}
 
+			VkSemaphoreCreateInfo SemaphoreInfo{};
+			SemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 			if (!SwapChain.AcquireSemaphore)
 			{
-				VkSemaphoreCreateInfo SemaphoreInfo{};
-				SemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 				if (CreateSemaphoreFn(Device, &SemaphoreInfo, nullptr, &SwapChain.AcquireSemaphore) != VK_SUCCESS || !SwapChain.AcquireSemaphore)
+				{
+					DestroySwapChain(SwapChain);
+					return false;
+				}
+			}
+			if (!SwapChain.RenderFinishedSemaphore)
+			{
+				if (CreateSemaphoreFn(Device, &SemaphoreInfo, nullptr, &SwapChain.RenderFinishedSemaphore) != VK_SUCCESS || !SwapChain.RenderFinishedSemaphore)
 				{
 					DestroySwapChain(SwapChain);
 					return false;
@@ -1457,6 +1518,9 @@ namespace Skylark
 			}
 
 			SwapChain.ImageCount = ImageCount;
+			SwapChain.ImageFormat = ChosenFormat.format;
+			SwapChain.bSupportsTransferDst = true;
+			SwapChain.ImageLayouts.assign(ImageCount, VK_IMAGE_LAYOUT_UNDEFINED);
 			SwapChain.bHeadless = false;
 			SwapChain.bInitialized = true;
 			return true;
@@ -1510,6 +1574,9 @@ namespace Skylark
 		VulkanMini::PFN_vkBeginCommandBuffer BeginCommandBufferFn = nullptr;
 		VulkanMini::PFN_vkEndCommandBuffer EndCommandBufferFn = nullptr;
 		VulkanMini::PFN_vkQueueSubmit QueueSubmitFn = nullptr;
+		VulkanMini::PFN_vkResetCommandBuffer ResetCommandBufferFn = nullptr;
+		VulkanMini::PFN_vkCmdPipelineBarrier CmdPipelineBarrierFn = nullptr;
+		VulkanMini::PFN_vkCmdClearColorImage CmdClearColorImageFn = nullptr;
 		VulkanMini::VkCommandPool ImmediateCommandPool = nullptr;
 		VulkanMini::VkCommandBuffer ImmediateCommandBuffer = nullptr;
 

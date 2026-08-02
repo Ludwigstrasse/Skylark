@@ -8,12 +8,50 @@
 	#ifndef WIN32_LEAN_AND_MEAN
 		#define WIN32_LEAN_AND_MEAN
 	#endif
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 	#include <windows.h>
 	#include <GL/gl.h>
 #endif
 
 namespace Skylark
 {
+	namespace
+	{
+		static inline uint8 SKGL_UnpackR(uint32 C) { return static_cast<uint8>((C >> 0) & 0xFFu); }
+		static inline uint8 SKGL_UnpackG(uint32 C) { return static_cast<uint8>((C >> 8) & 0xFFu); }
+		static inline uint8 SKGL_UnpackB(uint32 C) { return static_cast<uint8>((C >> 16) & 0xFFu); }
+		static inline uint8 SKGL_UnpackA(uint32 C) { return static_cast<uint8>((C >> 24) & 0xFFu); }
+
+		static uint32 SKGL_ModulateRGBA8(uint32 Base, uint32 Tint)
+		{
+			auto Mul8 = [](uint8 A, uint8 B) -> uint8
+			{
+				return static_cast<uint8>((static_cast<uint32>(A) * static_cast<uint32>(B) + 127u) / 255u);
+			};
+			return static_cast<uint32>(Mul8(SKGL_UnpackR(Base), SKGL_UnpackR(Tint)))
+				| (static_cast<uint32>(Mul8(SKGL_UnpackG(Base), SKGL_UnpackG(Tint))) << 8u)
+				| (static_cast<uint32>(Mul8(SKGL_UnpackB(Base), SKGL_UnpackB(Tint))) << 16u)
+				| (static_cast<uint32>(Mul8(SKGL_UnpackA(Base), SKGL_UnpackA(Tint))) << 24u);
+		}
+
+		static FSKVector4f SKGL_TransformVertex(const FSKRHITriangleVertex& V, const FSKRHITriangleDrawParams& Params, const FSKMatrix4f* InstanceLocalToWorld)
+		{
+			FSKVector4f P(V.X, V.Y, V.Z, V.W);
+			if (!Params.bApplyTransform)
+			{
+				return P;
+			}
+
+			if (InstanceLocalToWorld)
+			{
+				const FSKMatrix4f Final = SKMatrixMultiply(Params.Transform, *InstanceLocalToWorld);
+				return SKTransformVector4(Final, P);
+			}
+			return SKTransformVector4(Params.Transform, P);
+		}
+	}
 	class FSKOpenGLTexture2D final : public ISKRHITexture2D
 	{
 	public:
@@ -295,6 +333,112 @@ namespace Skylark
 #endif
 		}
 
+
+
+		void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			if (!Vertices || VertexCount < 3 || !BoundSwapChain)
+			{
+				return;
+			}
+#if defined(_WIN32)
+			if (!BoundSwapChain->MakeCurrent())
+			{
+				return;
+			}
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			if (Params.bDepthTest) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+			if (Params.bCullBackFace) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+			if (Params.bAlphaBlend) { glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); } else { glDisable(GL_BLEND); }
+			glBegin(GL_TRIANGLES);
+			for (uint32 Index = 0; Index < VertexCount; ++Index)
+			{
+				const auto& V = Vertices[Index];
+				const FSKVector4f P = SKGL_TransformVertex(V, Params, nullptr);
+				glColor4ub(SKGL_UnpackR(V.ColorRGBA8), SKGL_UnpackG(V.ColorRGBA8), SKGL_UnpackB(V.ColorRGBA8), SKGL_UnpackA(V.ColorRGBA8));
+				glVertex4f(P.X, P.Y, P.Z, P.W);
+			}
+			glEnd();
+#endif
+		}
+
+		void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			if (!Vertices || !Indices || VertexCount == 0 || IndexCount < 3 || !BoundSwapChain)
+			{
+				return;
+			}
+#if defined(_WIN32)
+			if (!BoundSwapChain->MakeCurrent())
+			{
+				return;
+			}
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			if (Params.bDepthTest) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+			if (Params.bCullBackFace) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+			if (Params.bAlphaBlend) { glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); } else { glDisable(GL_BLEND); }
+			glBegin(GL_TRIANGLES);
+			for (uint32 I = 0; I < IndexCount; ++I)
+			{
+				const uint32 VertexIndex = Indices[I];
+				if (VertexIndex >= VertexCount)
+				{
+					continue;
+				}
+				const auto& V = Vertices[VertexIndex];
+				const FSKVector4f P = SKGL_TransformVertex(V, Params, nullptr);
+				glColor4ub(SKGL_UnpackR(V.ColorRGBA8), SKGL_UnpackG(V.ColorRGBA8), SKGL_UnpackB(V.ColorRGBA8), SKGL_UnpackA(V.ColorRGBA8));
+				glVertex4f(P.X, P.Y, P.Z, P.W);
+			}
+			glEnd();
+#endif
+		}
+
+		void DrawIndexedInstancedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleInstance* Instances, uint32 InstanceCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			if (!Vertices || !Indices || !Instances || VertexCount == 0 || IndexCount < 3 || InstanceCount == 0 || !BoundSwapChain)
+			{
+				return;
+			}
+#if defined(_WIN32)
+			if (!BoundSwapChain->MakeCurrent())
+			{
+				return;
+			}
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			if (Params.bDepthTest) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+			if (Params.bCullBackFace) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+			if (Params.bAlphaBlend) { glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); } else { glDisable(GL_BLEND); }
+			for (uint32 InstanceIndex = 0; InstanceIndex < InstanceCount; ++InstanceIndex)
+			{
+				const auto& Instance = Instances[InstanceIndex];
+				glBegin(GL_TRIANGLES);
+				for (uint32 I = 0; I < IndexCount; ++I)
+				{
+					const uint32 VertexIndex = Indices[I];
+					if (VertexIndex >= VertexCount)
+					{
+						continue;
+					}
+					const auto& V = Vertices[VertexIndex];
+					const uint32 Color = SKGL_ModulateRGBA8(V.ColorRGBA8, Instance.TintRGBA8);
+					const FSKVector4f P = SKGL_TransformVertex(V, Params, &Instance.LocalToWorld);
+					glColor4ub(SKGL_UnpackR(Color), SKGL_UnpackG(Color), SKGL_UnpackB(Color), SKGL_UnpackA(Color));
+					glVertex4f(P.X, P.Y, P.Z, P.W);
+				}
+				glEnd();
+			}
+#endif
+		}
 		void Flush() override
 		{
 #if defined(_WIN32)

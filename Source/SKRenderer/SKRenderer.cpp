@@ -14,6 +14,7 @@ namespace Skylark
 		Pipeline->AddPass(std::make_unique<FSKSelectionPass>());
 		Pipeline->AddPass(std::make_unique<FSKFieldVizPass>());
 		Pipeline->AddPass(std::make_unique<FSKPostProcessPass>());
+		Pipeline->AddPass(std::make_unique<FSKSelectionOverlayPass>());
 		return Pipeline;
 	}
 }

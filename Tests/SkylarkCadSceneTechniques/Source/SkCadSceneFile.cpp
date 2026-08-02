@@ -35,7 +35,25 @@
 
 #include <string.h> // for memcpy
 #include <stddef.h> // for memcpy
-#include "cadscenefile.h"
+#include "SkCadSceneFile.h"
+
+#ifndef NV_FORCE_INLINE
+#  if defined(_MSC_VER)
+#    define NV_FORCE_INLINE __forceinline
+#  else
+#    define NV_FORCE_INLINE inline
+#  endif
+#endif
+
+#ifndef NV_RESTRICT
+#  if defined(_MSC_VER)
+#    define NV_RESTRICT __restrict
+#  elif defined(__GNUC__) || defined(__clang__)
+#    define NV_RESTRICT __restrict__
+#  else
+#    define NV_RESTRICT
+#  endif
+#endif
 
 #ifdef WIN32
 #define FREAD(a,b,c,d,e) fread_s(a,b,c,d,e)

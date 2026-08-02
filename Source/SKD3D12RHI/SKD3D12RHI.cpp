@@ -10,12 +10,16 @@
 	#ifndef WIN32_LEAN_AND_MEAN
 		#define WIN32_LEAN_AND_MEAN
 	#endif
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 	#include <windows.h>
 
 	#include <wrl/client.h>
 	#include <d3d12.h>
 	#include <dxgi1_6.h>
 
+	#include <algorithm>
 	#include <cstring>
 
 	using Microsoft::WRL::ComPtr;
@@ -115,6 +119,11 @@ namespace Skylark
 				return A;
 			}
 
+			if (Bytes > SizeBytes)
+			{
+				return A;
+			}
+
 			const UINT64 Aligned = (Offset + (UINT64)Alignment - 1) & ~((UINT64)Alignment - 1);
 			if (Aligned + (UINT64)Bytes > (UINT64)SizeBytes)
 			{
@@ -209,6 +218,13 @@ namespace Skylark
 		bool bReady = false;
 	};
 
+	struct FSKD3D12TrianglePipeline
+	{
+		ComPtr<ID3D12RootSignature> RootSig;
+		ComPtr<ID3D12PipelineState> PSO;
+		bool bReady = false;
+	};
+
 	class FSKD3D12CommandList final : public ISKRHICommandList
 	{
 	public:
@@ -221,6 +237,9 @@ namespace Skylark
 		void SetRenderTargetTexture(ISKRHITexture2D& ColorTarget) override;
 		void ClearRenderTarget(const FSKRHIClearColor& Color) override;
 		void DrawLineList(const FSKRHILineVertex* Vertices, uint32 VertexCount, const FSKRHILineDrawParams& Params) override;
+		void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params) override;
+		void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params) override;
+		void DrawIndexedInstancedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleInstance* Instances, uint32 InstanceCount, const FSKRHITriangleDrawParams& Params) override;
 		void Flush() override {}
 
 		ID3D12GraphicsCommandList* CmdList = nullptr;
@@ -327,7 +346,7 @@ namespace Skylark
 			ShaderCache = std::make_unique<FSKShaderBytecodeCache>(std::make_unique<FSKDiskBytecodeCache>(".sk_shadercache"));
 
 			// V13: upload ring for dynamic draws
-			if (!Upload.Init(Device.Get(), 2 * 1024 * 1024))
+			if (!Upload.Init(Device.Get(), 128 * 1024 * 1024))
 			{
 				SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "D3D12: Upload ring init failed (line rendering may fail)");
 			}
@@ -340,6 +359,7 @@ namespace Skylark
 			WaitGPU();
 			SwapChains.clear();
 			Line = {};
+			Triangle = {};
 			Upload.Shutdown();
 			ShaderCache.reset();
 			ShaderCompiler.reset();
@@ -355,12 +375,18 @@ namespace Skylark
 
 		void BeginFrame() override
 		{
+			bSubmittedByPresent = false;
 			Allocator->Reset();
 			CmdList->Reset(Allocator.Get(), nullptr);
+			Immediate.CmdList = CmdList.Get();
 		}
 
 		void EndFrame() override
 		{
+			if (bSubmittedByPresent)
+			{
+				return;
+			}
 			CmdList->Close();
 			ID3D12CommandList* Lists[] = { CmdList.Get() };
 			Queue->ExecuteCommandLists(1, Lists);
@@ -372,7 +398,7 @@ namespace Skylark
 		TUniquePtr<ISKRHISwapChain> CreateSwapChain(const FSKRHISwapChainDesc& InDesc) override
 		{
 			auto SC = std::make_unique<FSKD3D12SwapChain>(this, InDesc);
-			if (!InDesc.Window.Hwnd)
+			if (!InDesc.Window.Handle)
 			{
 				return SC;
 			}
@@ -387,7 +413,7 @@ namespace Skylark
 			S.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 			ComPtr<IDXGISwapChain1> Swap1;
-			if (FAILED(Factory->CreateSwapChainForHwnd(Queue.Get(), (HWND)InDesc.Window.Hwnd, &S, nullptr, nullptr, &Swap1)))
+			if (FAILED(Factory->CreateSwapChainForHwnd(Queue.Get(), reinterpret_cast<HWND>(InDesc.Window.Handle), &S, nullptr, nullptr, &Swap1)))
 			{
 				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: CreateSwapChainForHwnd failed");
 				return SC;
@@ -562,6 +588,7 @@ namespace Skylark
 		ID3D12GraphicsCommandList* GetCmdList() const { return CmdList.Get(); }
 
 		FSKD3D12LinePipeline& GetLinePipeline() { return Line; }
+		FSKD3D12TrianglePipeline& GetTrianglePipeline() { return Triangle; }
 		FSKD3D12UploadRing& GetUpload() { return Upload; }
 		ISKShaderCompiler* GetShaderCompiler() const { return ShaderCompiler.get(); }
 		FSKShaderBytecodeCache* GetShaderCache() const { return ShaderCache.get(); }
@@ -712,6 +739,166 @@ namespace Skylark
 			Line.bReady = true;
 		}
 
+
+		void EnsureTrianglePipeline()
+		{
+			if (Triangle.bReady)
+			{
+				return;
+			}
+
+			if (!ShaderCompiler)
+			{
+				return;
+			}
+
+			FSKShaderCompileRequest VSReq;
+			VSReq.Language = ESKShaderLanguage::Hlsl;
+			VSReq.Stage = ESKShaderStage::Vertex;
+			VSReq.EntryPoint = "VSMain";
+			VSReq.Profile = "vs_5_0";
+			VSReq.DebugName = "SkylarkTriangleVS";
+			VSReq.Source.Code =
+				"struct VSIn {"
+				"  float4 Pos : POSITION;"
+				"  float4 Color : COLOR0;"
+				"  float4 InstRow0 : INSTANCE0;"
+				"  float4 InstRow1 : INSTANCE1;"
+				"  float4 InstRow2 : INSTANCE2;"
+				"  float4 InstRow3 : INSTANCE3;"
+				"  float4 InstColor : COLOR1;"
+				"};"
+				"struct PSIn { float4 Pos : SV_POSITION; float4 Color : COLOR0; };"
+				"PSIn VSMain(VSIn v){"
+				"  PSIn o;"
+				"  float4x4 m = float4x4(v.InstRow0, v.InstRow1, v.InstRow2, v.InstRow3);"
+				"  o.Pos = mul(m, v.Pos);"
+				"  o.Color = v.Color * v.InstColor;"
+				"  return o;"
+				"}";
+
+			FSKShaderCompileRequest PSReq;
+			PSReq.Language = ESKShaderLanguage::Hlsl;
+			PSReq.Stage = ESKShaderStage::Pixel;
+			PSReq.EntryPoint = "PSMain";
+			PSReq.Profile = "ps_5_0";
+			PSReq.DebugName = "SkylarkTrianglePS";
+			PSReq.Source.Code =
+				"struct PSIn { float4 Pos : SV_POSITION; float4 Color : COLOR0; };"
+				"float4 PSMain(PSIn i) : SV_Target0 { return i.Color; }";
+
+			TArray<uint8> VSBytes;
+			TArray<uint8> PSBytes;
+			const FSKHash64 VSKey = SKComputeShaderKey(VSReq);
+			const FSKHash64 PSKey = SKComputeShaderKey(PSReq);
+			bool bVSHit = ShaderCache && ShaderCache->Get(VSKey, VSBytes);
+			bool bPSHit = ShaderCache && ShaderCache->Get(PSKey, PSBytes);
+
+			if (!bVSHit)
+			{
+				FSKShaderCompileOutput Out;
+				if (!ShaderCompiler->Compile(VSReq, Out) || !Out.bSucceeded)
+				{
+					SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: triangle VS compile failed: %s", Out.Errors.c_str());
+					return;
+				}
+				VSBytes = Out.Bytecode;
+				if (ShaderCache) ShaderCache->Put(VSKey, VSBytes);
+			}
+
+			if (!bPSHit)
+			{
+				FSKShaderCompileOutput Out;
+				if (!ShaderCompiler->Compile(PSReq, Out) || !Out.bSucceeded)
+				{
+					SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: triangle PS compile failed: %s", Out.Errors.c_str());
+					return;
+				}
+				PSBytes = Out.Bytecode;
+				if (ShaderCache) ShaderCache->Put(PSKey, PSBytes);
+			}
+
+			D3D12_ROOT_SIGNATURE_DESC RS{};
+			RS.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			ComPtr<ID3DBlob> Sig;
+			ComPtr<ID3DBlob> Err;
+			if (FAILED(D3D12SerializeRootSignature(&RS, D3D_ROOT_SIGNATURE_VERSION_1, &Sig, &Err)))
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: SerializeRootSignature(triangle) failed");
+				return;
+			}
+			if (FAILED(Device->CreateRootSignature(0, Sig->GetBufferPointer(), Sig->GetBufferSize(), IID_PPV_ARGS(&Triangle.RootSig))))
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: CreateRootSignature(triangle) failed");
+				return;
+			}
+
+			D3D12_INPUT_ELEMENT_DESC Layout[] = {
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,  0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,   0 },
+				{ "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,   0 },
+				{ "INSTANCE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1,  0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 },
+				{ "INSTANCE", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 },
+				{ "INSTANCE", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 },
+				{ "INSTANCE", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 },
+				{ "COLOR",    1, DXGI_FORMAT_R8G8B8A8_UNORM,     1, 64, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 },
+			};
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC Pso{};
+			Pso.pRootSignature = Triangle.RootSig.Get();
+			Pso.VS = { VSBytes.data(), VSBytes.size() };
+			Pso.PS = { PSBytes.data(), PSBytes.size() };
+
+			D3D12_BLEND_DESC Blend{};
+			auto& RT0 = Blend.RenderTarget[0];
+			RT0.BlendEnable = TRUE;
+			RT0.LogicOpEnable = FALSE;
+			RT0.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			RT0.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			RT0.BlendOp = D3D12_BLEND_OP_ADD;
+			RT0.SrcBlendAlpha = D3D12_BLEND_ONE;
+			RT0.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+			RT0.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			RT0.LogicOp = D3D12_LOGIC_OP_NOOP;
+			RT0.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+			Pso.BlendState = Blend;
+
+			D3D12_RASTERIZER_DESC Rast{};
+			Rast.FillMode = D3D12_FILL_MODE_SOLID;
+			Rast.CullMode = D3D12_CULL_MODE_NONE;
+			Rast.FrontCounterClockwise = FALSE;
+			Rast.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+			Rast.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+			Rast.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+			Rast.DepthClipEnable = TRUE;
+			Rast.MultisampleEnable = FALSE;
+			Rast.AntialiasedLineEnable = FALSE;
+			Rast.ForcedSampleCount = 0;
+			Rast.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+			Pso.RasterizerState = Rast;
+
+			D3D12_DEPTH_STENCIL_DESC DS{};
+			DS.DepthEnable = FALSE;
+			DS.StencilEnable = FALSE;
+			DS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+			DS.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+			Pso.DepthStencilState = DS;
+
+			Pso.SampleMask = UINT_MAX;
+			Pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			Pso.NumRenderTargets = 1;
+			Pso.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			Pso.SampleDesc.Count = 1;
+			Pso.InputLayout = { Layout, sizeof(Layout) / sizeof(Layout[0]) };
+
+			if (FAILED(Device->CreateGraphicsPipelineState(&Pso, IID_PPV_ARGS(&Triangle.PSO))))
+			{
+				SK_LOG(GLogSkylark, ESKLogVerbosity::Error, "D3D12: CreateGraphicsPipelineState(triangle) failed");
+				return;
+			}
+
+			Triangle.bReady = true;
+		}
+
 		void CreateSwapChainRTVs(FSKD3D12SwapChain& SC)
 		{
 			SC.BackBuffers.clear();
@@ -769,6 +956,7 @@ namespace Skylark
 		ComPtr<ID3D12Fence> Fence;
 		UINT64 FenceValue = 0;
 		HANDLE FenceEvent = nullptr;
+		bool bSubmittedByPresent = false;
 
 		FSKD3D12CommandList Immediate;
 
@@ -780,6 +968,7 @@ namespace Skylark
 
 		FSKD3D12UploadRing Upload;
 		FSKD3D12LinePipeline Line;
+		FSKD3D12TrianglePipeline Triangle;
 	};
 
 	// ------------------------------------------------------------
@@ -805,7 +994,18 @@ namespace Skylark
 			Owner->CmdList->ResourceBarrier(1, &B);
 		}
 
+		if (Owner->CmdList)
+		{
+			if (SUCCEEDED(Owner->CmdList->Close()))
+			{
+				ID3D12CommandList* Lists[] = { Owner->CmdList.Get() };
+				Owner->Queue->ExecuteCommandLists(1, Lists);
+				Owner->bSubmittedByPresent = true;
+			}
+		}
+
 		SwapChain->Present(Desc.bVSync ? 1 : 0, 0);
+		Owner->WaitGPU();
 	}
 
 	// ------------------------------------------------------------
@@ -936,6 +1136,90 @@ namespace Skylark
 		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 		CmdList->IASetVertexBuffers(0, 1, &VB);
 		CmdList->DrawInstanced(VertexCount, 1, 0, 0);
+	}
+
+
+	void FSKD3D12CommandList::DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params)
+	{
+		if (!Vertices || VertexCount < 3)
+		{
+			return;
+		}
+
+		TArray<uint32> Indices;
+		Indices.resize(VertexCount);
+		for (uint32 Index = 0; Index < VertexCount; ++Index)
+		{
+			Indices[Index] = Index;
+		}
+		DrawIndexedTriangleList(Vertices, VertexCount, Indices.data(), VertexCount, Params);
+	}
+
+	void FSKD3D12CommandList::DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params)
+	{
+		FSKRHITriangleInstance Identity{};
+		Identity.LocalToWorld = Params.bApplyTransform ? Params.Transform : FSKMatrix4f::Identity();
+		Identity.TintRGBA8 = 0xFFFFFFFFu;
+		DrawIndexedInstancedTriangleList(Vertices, VertexCount, Indices, IndexCount, &Identity, 1u, Params);
+	}
+
+	void FSKD3D12CommandList::DrawIndexedInstancedTriangleList(
+		const FSKRHITriangleVertex* Vertices,
+		uint32 VertexCount,
+		const uint32* Indices,
+		uint32 IndexCount,
+		const FSKRHITriangleInstance* Instances,
+		uint32 InstanceCount,
+		const FSKRHITriangleDrawParams& Params)
+	{
+		(void)Params;
+		if (!CmdList || !Owner || !Vertices || !Indices || !Instances || VertexCount == 0 || IndexCount < 3 || InstanceCount == 0 || BoundRTV.ptr == 0)
+		{
+			return;
+		}
+
+		Owner->EnsureTrianglePipeline();
+		auto& Pipe = Owner->GetTrianglePipeline();
+		if (!Pipe.bReady)
+		{
+			return;
+		}
+
+		const SIZE_T VertexBytes = (SIZE_T)VertexCount * sizeof(FSKRHITriangleVertex);
+		const SIZE_T IndexBytes = (SIZE_T)IndexCount * sizeof(uint32);
+		const SIZE_T InstanceBytes = (SIZE_T)InstanceCount * sizeof(FSKRHITriangleInstance);
+
+		auto VertexAlloc = Owner->GetUpload().Allocate(VertexBytes, 16);
+		auto IndexAlloc = Owner->GetUpload().Allocate(IndexBytes, 4);
+		auto InstanceAlloc = Owner->GetUpload().Allocate(InstanceBytes, 16);
+		if (!VertexAlloc.Cpu || !IndexAlloc.Cpu || !InstanceAlloc.Cpu || !Owner->GetUpload().GetResource())
+		{
+			return;
+		}
+
+		std::memcpy(VertexAlloc.Cpu, Vertices, VertexBytes);
+		std::memcpy(IndexAlloc.Cpu, Indices, IndexBytes);
+		std::memcpy(InstanceAlloc.Cpu, Instances, InstanceBytes);
+
+		D3D12_VERTEX_BUFFER_VIEW VBs[2]{};
+		VBs[0].BufferLocation = VertexAlloc.Gpu;
+		VBs[0].SizeInBytes = (UINT)VertexBytes;
+		VBs[0].StrideInBytes = sizeof(FSKRHITriangleVertex);
+		VBs[1].BufferLocation = InstanceAlloc.Gpu;
+		VBs[1].SizeInBytes = (UINT)InstanceBytes;
+		VBs[1].StrideInBytes = sizeof(FSKRHITriangleInstance);
+
+		D3D12_INDEX_BUFFER_VIEW IB{};
+		IB.BufferLocation = IndexAlloc.Gpu;
+		IB.SizeInBytes = (UINT)IndexBytes;
+		IB.Format = DXGI_FORMAT_R32_UINT;
+
+		CmdList->SetGraphicsRootSignature(Pipe.RootSig.Get());
+		CmdList->SetPipelineState(Pipe.PSO.Get());
+		CmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CmdList->IASetVertexBuffers(0, 2, VBs);
+		CmdList->IASetIndexBuffer(&IB);
+		CmdList->DrawIndexedInstanced(IndexCount, InstanceCount, 0, 0, 0);
 	}
 
 	// ------------------------------------------------------------

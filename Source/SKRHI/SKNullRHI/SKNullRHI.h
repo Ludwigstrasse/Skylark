@@ -80,6 +80,23 @@ namespace Skylark
 			// NullRHI: no-op
 		}
 
+
+
+		void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices; (void)VertexCount; (void)Params;
+		}
+
+		void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices; (void)VertexCount; (void)Indices; (void)IndexCount; (void)Params;
+		}
+
+		void DrawIndexedInstancedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleInstance* Instances, uint32 InstanceCount, const FSKRHITriangleDrawParams& Params) override
+		{
+			(void)Vertices; (void)VertexCount; (void)Indices; (void)IndexCount; (void)Instances; (void)InstanceCount; (void)Params;
+		}
+
 		void Flush() override {}
 
 	private:

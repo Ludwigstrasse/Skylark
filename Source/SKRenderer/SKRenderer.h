@@ -1,5 +1,6 @@
 #pragma once
 #include "SKCore/SKCoreMinimal.h"
+#include "SKCore/SKObjectId.h"
 #include "SKPlatform/SKPlatform.h"
 #include "SKRHI/SKRHI.h"
 
@@ -41,7 +42,71 @@ namespace Skylark
 		bool bLogStreamingStats = false;
 	};
 
-// ---- View / Feature Inputs (CAD/BIM/CAE) ----
+
+
+// ---- Selection / Highlight Inputs (P3) ----
+	// User-facing selection filter/highlight mask. Body maps to Object-level selection in CAD apps.
+	enum ESKSelectionEntityMask : uint32
+	{
+		SK_Select_None       = 0u,
+		SK_Select_Object     = 1u << 0u,
+		SK_Select_Face       = 1u << 1u,
+		SK_Select_Edge       = 1u << 2u,
+		SK_Select_Vertex     = 1u << 3u,
+		SK_Select_BimElement = 1u << 4u,
+		SK_Select_All        = 0xFFFFFFFFu,
+	};
+
+	SK_FORCEINLINE uint32 SKSelectionMaskFromObjectType(ESKObjectEntityType Type)
+	{
+		switch (Type)
+		{
+		case ESKObjectEntityType::Face:    return SK_Select_Face;
+		case ESKObjectEntityType::Edge:    return SK_Select_Edge;
+		case ESKObjectEntityType::Vertex:  return SK_Select_Vertex;
+		case ESKObjectEntityType::Element: return SK_Select_BimElement;
+		case ESKObjectEntityType::Body:
+		case ESKObjectEntityType::Unknown:
+		default:                          return SK_Select_Object;
+		}
+	}
+
+	SK_FORCEINLINE bool SKSelectionMaskMatches(ESKObjectEntityType Type, uint32 Mask)
+	{
+		return (SKSelectionMaskFromObjectType(Type) & Mask) != 0u;
+	}
+
+	struct FSKSelectionStyle
+	{
+		bool bEnable = true;
+		bool bTintFill = true;
+		bool bOutline = true;
+		bool bShowHover = true;
+		bool bShowSelection = true;
+
+		float SelectedFillAlpha = 0.26f;
+		float HoverFillAlpha = 0.18f;
+		float OutlineWidth = 2.0f;
+
+		// Packed RGBA8 (R in lowest byte).
+		uint32 SelectedFillRGBA8 = 0x42F2B347u; // warm amber, alpha overridden by SelectedFillAlpha
+		uint32 HoverFillRGBA8 = 0x42FFDA78u;    // lighter amber, alpha overridden by HoverFillAlpha
+		uint32 OutlineRGBA8 = 0xFF1E7BFFu;      // blue outline
+
+		// Which entity kinds are eligible for selection-buffer emission and overlay highlight.
+		uint32 PickEntityMask = SK_Select_All;
+		uint32 HighlightEntityMask = SK_Select_All;
+	};
+
+	struct FSKSelectionState
+	{
+		TArray<FSKObjectId> SelectedTopoIds;
+		TArray<FSKObjectId> HoveredTopoIds;
+		FSKSelectionStyle Style{};
+	};
+
+
+	// ---- View / Feature Inputs (CAD/BIM/CAE) ----
 	struct FSKViewMatrices
 	{
 		FSKMatrix4f View = FSKMatrix4f::Identity();
@@ -130,6 +195,7 @@ struct FSKEdgeRenderSettings
 		TArray<FSKSectionPlane> SectionPlanes;
 		FSKBimFilter BimFilter{};
 		FSKFieldViz FieldViz{};
+		FSKSelectionState Selection{};
 		FSKDebugOptions Debug{};
 	};
 

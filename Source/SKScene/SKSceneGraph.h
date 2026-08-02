@@ -114,6 +114,7 @@ namespace Skylark
 		virtual bool IsInstanced() const { return false; }
 
 		virtual uint64 GetGeometryKey() const { return 0; }
+		virtual int32 GetSectionIndex() const { return -1; }
 		virtual uint32 GetHitProxyId() const { return 0; }
 
 	private:
@@ -145,11 +146,15 @@ namespace Skylark
 		void SetGeometryKey(uint64 InKey) { GeometryKey = InKey; }
 		uint64 GetGeometryKey() const override { return GeometryKey; }
 
+		void SetSectionIndex(int32 InSectionIndex) { SectionIndex = InSectionIndex; }
+		int32 GetSectionIndex() const override { return SectionIndex; }
+
 		void SetHitProxyId(uint32 InId) { HitProxyId = InId; }
 		uint32 GetHitProxyId() const override { return HitProxyId; }
 
 	private:
 		uint64 GeometryKey = 0;
+		int32 SectionIndex = -1;
 		uint32 HitProxyId = 0;
 	};
 
@@ -163,6 +168,9 @@ namespace Skylark
 
 		void SetGeometryKey(uint64 InKey) { GeometryKey = InKey; }
 		uint64 GetGeometryKey() const override { return GeometryKey; }
+
+		void SetSectionIndex(int32 InSectionIndex) { SectionIndex = InSectionIndex; }
+		int32 GetSectionIndex() const override { return SectionIndex; }
 
 		// Add one instance
 		void AddInstance(const FSKMatrix4f& InLocal, uint32 InHitProxyId, const FSKObjectId& InOwnerId)
@@ -179,6 +187,7 @@ namespace Skylark
 
 	private:
 		uint64 GeometryKey = 0;
+		int32 SectionIndex = -1;
 		TArray<FSKMatrix4f> InstanceLocal;
 		TArray<uint32> InstanceHitProxyId;
 		TArray<FSKObjectId> InstanceOwnerId;
@@ -283,6 +292,7 @@ namespace Skylark
 			}
 
 			const uint64 MaterialKey = EffectiveMaterialKey;
+			const int32 SectionIndex = Node->GetSectionIndex();
 
 			if (Params.bBuildInstanceBatches && Node->IsInstanced())
 			{
@@ -292,8 +302,10 @@ namespace Skylark
 					return;
 				}
 
-				// Group by (GeometryKey, MaterialKey)
-				const uint64 H = HashBatchKey(GeometryKey, MaterialKey);
+				// Group by (GeometryKey, MaterialKey, SectionIndex).
+				// SectionIndex must be part of the batch key; otherwise different CAD sections
+				// sharing the same source geometry/material would be merged into one draw batch.
+				const uint64 H = HashBatchKey(GeometryKey, MaterialKey, SectionIndex);
 				auto It = InstanceBatchMap.find(H);
 				SIZE_T BatchIndex = 0;
 				if (It == InstanceBatchMap.end())
@@ -301,6 +313,7 @@ namespace Skylark
 					FSKInstanceBatch B;
 					B.GeometryKey = GeometryKey;
 					B.MaterialKey = MaterialKey;
+					B.SectionIndex = SectionIndex;
 					View.VisibleInstances.push_back(std::move(B));
 					BatchIndex = View.VisibleInstances.size() - 1;
 					InstanceBatchMap.emplace(H, BatchIndex);
@@ -329,15 +342,19 @@ namespace Skylark
 			Proxy.HitProxyId = Node->GetHitProxyId();
 			Proxy.GeometryKey = GeometryKey;
 			Proxy.MaterialKey = MaterialKey;
+			Proxy.SectionIndex = SectionIndex;
 			View.VisibleProxies.push_back(Proxy);
 		}
 
 	private:
-		static uint64 HashBatchKey(uint64 GeometryKey, uint64 MaterialKey)
+		static uint64 HashBatchKey(uint64 GeometryKey, uint64 MaterialKey, int32 SectionIndex)
 		{
-			// 64-bit mix
+			// 64-bit mix. SectionIndex is part of the drawable identity; otherwise
+			// different CAD sections would be batched together and drawn as full meshes.
 			uint64 H = GeometryKey * 0x9E3779B97F4A7C15ull;
 			H ^= (MaterialKey + 0xBF58476D1CE4E5B9ull) + (H << 6) + (H >> 2);
+			const uint64 SectionKey = static_cast<uint64>(static_cast<int64>(SectionIndex) + 1ll);
+			H ^= (SectionKey + 0x94D049BB133111EBull) + (H << 6) + (H >> 2);
 			return H;
 		}
 

@@ -49,7 +49,8 @@ namespace Skylark
 			const FSKEdgeRenderSettings& EdgeSettings,
 			const FSKViewMatrices& Matrices,
 			uint32 ColorRGBA8,
-			TArray<FSKRHILineVertex>& Out);
+			TArray<FSKRHILineVertex>& Out,
+			int32 SectionIndex = -1);
 
 	};
 }

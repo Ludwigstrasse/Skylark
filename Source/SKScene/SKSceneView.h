@@ -20,6 +20,7 @@ namespace Skylark
 		uint32 HitProxyId = 0;
 		uint64 GeometryKey = 0; // opaque (mesh handle / topo handle)
 		uint64 MaterialKey = 0; // opaque (StateSet/Material)
+		int32 SectionIndex = -1; // -1 means all sections; otherwise draw only this mesh section
 	};
 
 	/**
@@ -31,6 +32,7 @@ namespace Skylark
 	{
 		uint64 GeometryKey = 0;
 		uint64 MaterialKey = 0;
+		int32 SectionIndex = -1; // -1 means all sections; otherwise draw only this mesh section
 		TArray<FSKMatrix4f> InstanceLocalToWorld;
 		TArray<uint32> InstanceHitProxyId;
 	};

@@ -10,6 +10,11 @@ option(SK_BUILD_INSTALL "Enable install/export rules" ON)
 option(SK_BUILD_SHARED "Build Skylark libraries as shared libraries" OFF)
 option(SK_BUILD_SMOKE_TEST "Build a tiny host-side link smoke test" OFF)
 option(SK_BUILD_CADSCENE_TEST_APP "Build the Skylark CAD scene techniques OpenGL test application" OFF)
+option(SK_BUILD_CAD_EDITOR_LAB "Build the Skylark CAD editor lab runtime test application" OFF)
+option(SK_BUILD_FORMAT_WORKBENCH "Build the Skylark format workbench commercial test application" OFF)
+option(SK_BUILD_CAM_WORKBENCH "Build the Skylark CAM workbench commercial test application" OFF)
+option(SK_BUILD_VOLUME_STUDIO "Build the Skylark Volume Studio commercial validation application under Tests" OFF)
+option(SK_BUILD_VOLUME_STUDIO_QT "Build the Qt desktop shell for Skylark Volume Studio" OFF)
 option(SK_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(SK_ENABLE_OPENGL "Enable OpenGL RHI backend" OFF)
 option(SK_ENABLE_VULKAN "Enable Vulkan RHI backend" OFF)
@@ -28,7 +33,12 @@ add_library(skylark_project_warnings INTERFACE)
 target_compile_features(skylark_project_options INTERFACE cxx_std_20)
 
 if(WIN32)
-  target_compile_definitions(skylark_project_options INTERFACE SK_PLATFORM_WINDOWS=1 SK_PLATFORM_LINUX=0 SK_PLATFORM_MAC=0)
+  target_compile_definitions(skylark_project_options INTERFACE
+    SK_PLATFORM_WINDOWS=1
+    SK_PLATFORM_LINUX=0
+    SK_PLATFORM_MAC=0
+    WIN32_LEAN_AND_MEAN
+    NOMINMAX)
 elseif(APPLE)
   target_compile_definitions(skylark_project_options INTERFACE SK_PLATFORM_WINDOWS=0 SK_PLATFORM_LINUX=0 SK_PLATFORM_MAC=1)
 else()
@@ -149,7 +159,7 @@ sk_add_module(SKPlatform
     $<$<PLATFORM_ID:Darwin>:Source/SKPlatform/SKMacPlatform.cpp>
   PUBLIC_DEPS SKCore)
 sk_add_module(SKScene SOURCES Source/SKScene/SKScene.cpp Source/SKScene/SKSceneGraph.cpp Source/SKScene/SKPagedLOD.cpp PUBLIC_DEPS SKCore SKLWC)
-sk_add_module(SKRHI SOURCES Source/SKRHI/SKRHIFactory.cpp Source/SKRHI/SKNullRHI/SKNullRHI.cpp PUBLIC_DEPS SKCore SKPlatform)
+sk_add_module(SKRHI SOURCES Source/SKRHI/SKRHIFactory.cpp Source/SKRHI/SKRHIRuntimeConfig.cpp Source/SKRHI/SKNullRHI/SKNullRHI.cpp PUBLIC_DEPS SKCore SKPlatform)
 sk_add_module(SKRenderGraph SOURCES Source/SKRenderGraph/SKRenderGraph.cpp PUBLIC_DEPS SKCore SKProfiler SKRHI)
 sk_add_module(SKAnnotation SOURCES Source/SKAnnotation/SKAnnotation.cpp PUBLIC_DEPS SKCore SKScene)
 sk_add_module(SKCAD SOURCES Source/SKCAD/SKCadImporter.cpp PUBLIC_DEPS SKCore SKGeometry)
@@ -160,7 +170,26 @@ sk_add_module(SKStreaming SOURCES Source/SKStreaming/SKStreaming.cpp Source/SKSt
 sk_add_module(SKRenderThread SOURCES Source/SKRenderThread/SKRenderThread.cpp PUBLIC_DEPS SKCore)
 sk_add_module(SKLineRender SOURCES Source/SKLineRender/SKLineRender.cpp PUBLIC_DEPS SKCore SKGeometry SKRHI SKScene)
 sk_add_module(SKFieldViz SOURCES Source/SKFieldViz/SKFieldViz.cpp Source/SKFieldViz/SKIsoSurface.cpp PUBLIC_DEPS SKCore SKField SKGeometry SKLineRender SKRHI SKScene)
-sk_add_module(SKRenderer SOURCES Source/SKRenderer/SKRenderer.cpp Source/SKRenderer/SKRenderPipeline.cpp Source/SKRenderer/SKDefaultPasses.cpp PUBLIC_DEPS SKCore SKPlatform SKProfiler SKRHI SKRenderGraph SKScene SKInteraction SKLineRender SKAnnotation SKFieldViz)
+sk_add_module(SKRenderer
+  SOURCES
+    Source/SKRenderer/SKRenderer.cpp
+    Source/SKRenderer/SKRenderPipeline.cpp
+    Source/SKRenderer/SKDefaultPasses.cpp
+    Source/SKRenderer/SKTriangleSceneRenderer.cpp
+    Source/SKRenderer/SKMeshRenderer.cpp
+    Source/SKRenderer/SKSelectionRenderer.cpp
+    Source/SKRenderer/SKSelectionOverlayRenderer.cpp
+    Source/SKRenderer/SKMeshDrawPacket.cpp
+    Source/SKRenderer/SKPacketBuildUtils.cpp
+    Source/SKRenderer/SKRenderScratchBuffer.cpp
+    Source/SKRenderer/SKEdgeDrawPacket.cpp
+    Source/SKRenderer/SKGeometryResidencyCache.cpp
+    Source/SKRenderer/SKGpuResidentBufferCache.cpp
+    Source/SKRenderer/SKSceneUploadQueue.cpp
+    Source/SKRenderer/SKRenderBatching.cpp
+    Source/SKRenderer/SKInstanceDrawPacket.cpp
+    Source/SKRenderer/SKIndirectReadyPacket.cpp
+  PUBLIC_DEPS SKCore SKPlatform SKProfiler SKRHI SKRenderGraph SKScene SKInteraction SKLineRender SKAnnotation SKFieldViz)
 sk_add_module(SKShaderCore SOURCES Source/SKShaderCore/SKShaderCore.cpp PUBLIC_DEPS SKCore)
 sk_add_module(SKShaderCompiler SOURCES Source/SKShaderCompiler/SKShaderCompiler.cpp PUBLIC_DEPS SKCore SKShaderCore)
 sk_add_module(SKPipelineCache SOURCES Source/SKPipelineCache/SKPipelineCache.cpp PUBLIC_DEPS SKCore SKShaderCore)
@@ -230,12 +259,32 @@ if(SK_BUILD_CADSCENE_TEST_APP)
   find_package(ZLIB REQUIRED)
 
   set(SK_CADSCENE_TEST_SOURCES
-    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneApp.cpp
-    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.cpp
-    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.h
-    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.cpp
-    Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.h
-  )
+  Tests/Shared/SkSampleAppOptions.cpp
+  Tests/Shared/SkSampleAppOptions.h
+  Tests/Shared/SkSampleAppHost.cpp
+  Tests/Shared/SkSampleAppHost.h
+  Tests/Shared/SkSampleCameraOptions.cpp
+  Tests/Shared/SkSampleCameraOptions.h
+  Tests/Shared/SkSampleRuntimeStats.cpp
+  Tests/Shared/SkSampleRuntimeStats.h
+  Tests/Shared/SkSampleBenchmarkOptions.cpp
+  Tests/Shared/SkSampleBenchmarkOptions.h
+  Tests/Shared/SkSampleRunReport.cpp
+  Tests/Shared/SkSampleRunReport.h
+  Tests/Shared/SkSampleSceneManifest.cpp
+  Tests/Shared/SkSampleSceneManifest.h
+  Tests/Shared/SkSampleOutputLayout.cpp
+  Tests/Shared/SkSampleOutputLayout.h
+  Tests/Shared/SkSampleControls.cpp
+  Tests/Shared/SkSampleControls.h
+  Tests/Shared/SkCadSceneDiagnostics.cpp
+  Tests/Shared/SkCadSceneDiagnostics.h
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneApp.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.h
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.h
+)
 
   add_executable(SkylarkCadSceneTechniques ${SK_CADSCENE_TEST_SOURCES})
   target_link_libraries(SkylarkCadSceneTechniques PRIVATE SKCore SKGeometry skylark_project_options skylark_project_warnings ZLIB::ZLIB GLEW::GLEW OpenGL::GL)
@@ -250,7 +299,9 @@ if(SK_BUILD_CADSCENE_TEST_APP)
 
   target_compile_definitions(SkylarkCadSceneTechniques PRIVATE CSF_ZIP_SUPPORT=1)
   target_include_directories(SkylarkCadSceneTechniques PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Source)
-  set_target_properties(SkylarkCadSceneTechniques PROPERTIES FOLDER "Skylark/Tests")
+  set_target_properties(SkylarkCadSceneTechniques PROPERTIES
+    FOLDER "Skylark/Tests"
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:SkylarkCadSceneTechniques>")
 
   add_custom_command(TARGET SkylarkCadSceneTechniques POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:SkylarkCadSceneTechniques>/Tests/SkylarkCadSceneTechniques/Assets
@@ -259,6 +310,93 @@ if(SK_BUILD_CADSCENE_TEST_APP)
       $<TARGET_FILE_DIR:SkylarkCadSceneTechniques>/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz)
 endif()
 
+
+if(SK_BUILD_CAD_EDITOR_LAB)
+  find_package(glfw3 CONFIG REQUIRED)
+  find_package(ZLIB REQUIRED)
+
+  set(SK_CAD_EDITOR_LAB_SOURCES
+  Tests/Shared/SkSampleAppOptions.cpp
+  Tests/Shared/SkSampleAppOptions.h
+  Tests/Shared/SkSampleAppHost.cpp
+  Tests/Shared/SkSampleAppHost.h
+  Tests/Shared/SkSampleCameraOptions.cpp
+  Tests/Shared/SkSampleCameraOptions.h
+  Tests/Shared/SkSampleRuntimeStats.cpp
+  Tests/Shared/SkSampleRuntimeStats.h
+  Tests/Shared/SkSampleBenchmarkOptions.cpp
+  Tests/Shared/SkSampleBenchmarkOptions.h
+  Tests/Shared/SkSampleRunReport.cpp
+  Tests/Shared/SkSampleRunReport.h
+  Tests/Shared/SkSampleSceneManifest.cpp
+  Tests/Shared/SkSampleSceneManifest.h
+  Tests/Shared/SkSampleOutputLayout.cpp
+  Tests/Shared/SkSampleOutputLayout.h
+  Tests/Shared/SkSampleControls.cpp
+  Tests/Shared/SkSampleControls.h
+  Tests/Shared/SkCadSceneDiagnostics.cpp
+  Tests/Shared/SkCadSceneDiagnostics.h
+  Tests/SkylarkCadEditorLab/Source/SkCadEditorLab.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneImporter.h
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.cpp
+  Tests/SkylarkCadSceneTechniques/Source/SkCadSceneFile.h
+)
+
+  set(SK_CAD_EDITOR_LAB_DEFAULT_RHI "auto")
+  if(SK_ENABLE_D3D12 AND NOT SK_ENABLE_D3D11 AND NOT SK_ENABLE_OPENGL AND NOT SK_ENABLE_VULKAN)
+    set(SK_CAD_EDITOR_LAB_DEFAULT_RHI "d3d12")
+  elseif(SK_ENABLE_D3D11 AND NOT SK_ENABLE_D3D12 AND NOT SK_ENABLE_OPENGL AND NOT SK_ENABLE_VULKAN)
+    set(SK_CAD_EDITOR_LAB_DEFAULT_RHI "d3d11")
+  elseif(SK_ENABLE_VULKAN AND NOT SK_ENABLE_D3D11 AND NOT SK_ENABLE_D3D12 AND NOT SK_ENABLE_OPENGL)
+    set(SK_CAD_EDITOR_LAB_DEFAULT_RHI "vulkan")
+  elseif(SK_ENABLE_OPENGL AND NOT SK_ENABLE_D3D11 AND NOT SK_ENABLE_D3D12 AND NOT SK_ENABLE_VULKAN)
+    set(SK_CAD_EDITOR_LAB_DEFAULT_RHI "opengl")
+  endif()
+
+  add_executable(SkylarkCadEditorLab ${SK_CAD_EDITOR_LAB_SOURCES})
+  target_link_libraries(SkylarkCadEditorLab PRIVATE
+    SKCore SKGeometry SKScene SKRHI SKInteraction SKRenderer SKRuntime SKEngine
+    skylark_project_options skylark_project_warnings ZLIB::ZLIB)
+
+  if(TARGET glfw)
+    target_link_libraries(SkylarkCadEditorLab PRIVATE glfw)
+  elseif(TARGET glfw3::glfw)
+    target_link_libraries(SkylarkCadEditorLab PRIVATE glfw3::glfw)
+  else()
+    message(FATAL_ERROR "Could not find an imported GLFW target from glfw3 package.")
+  endif()
+
+  target_compile_definitions(SkylarkCadEditorLab PRIVATE
+    CSF_ZIP_SUPPORT=1
+    SK_CAD_EDITOR_LAB_DEFAULT_RHI="${SK_CAD_EDITOR_LAB_DEFAULT_RHI}")
+  target_include_directories(SkylarkCadEditorLab PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadEditorLab/Source
+    ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Source)
+  set_target_properties(SkylarkCadEditorLab PROPERTIES
+    FOLDER "Skylark/Tests"
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:SkylarkCadEditorLab>")
+
+  add_custom_command(TARGET SkylarkCadEditorLab POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:SkylarkCadEditorLab>/Tests/SkylarkCadEditorLab/Assets
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:SkylarkCadEditorLab>/Tests/SkylarkCadSceneTechniques/Assets
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz
+      $<TARGET_FILE_DIR:SkylarkCadEditorLab>/Tests/SkylarkCadEditorLab/Assets/geforce.csf.gz
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${CMAKE_CURRENT_SOURCE_DIR}/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz
+      $<TARGET_FILE_DIR:SkylarkCadEditorLab>/Tests/SkylarkCadSceneTechniques/Assets/geforce.csf.gz)
+endif()
+
+if(SK_BUILD_FORMAT_WORKBENCH)
+  add_subdirectory(Tests/SkylarkFormatWorkbench)
+endif()
+if(SK_BUILD_CAM_WORKBENCH)
+  add_subdirectory(Tests/SkylarkCamWorkbench)
+endif()
+if(SK_BUILD_VOLUME_STUDIO)
+  add_subdirectory(Tests/SkylarkVolumeStudio)
+endif()
 if(SK_BUILD_INSTALL)
   install(DIRECTORY Source/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl")
   install(EXPORT SkylarkTargets FILE SkylarkTargets.cmake NAMESPACE Skylark:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Skylark)

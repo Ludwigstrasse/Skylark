@@ -142,6 +142,11 @@ namespace Skylark
 			{
 				return false;
 			}
+			if (Api != ESKRHIApi::Null && RHIDevice->GetApi() != Api)
+			{
+				RHIDevice.reset();
+				return false;
+			}
 			if (!RHIDevice->Init(RD))
 			{
 				RHIDevice.reset();
@@ -150,7 +155,14 @@ namespace Skylark
 			return true;
 		};
 
-		if (TryInitRHI(RequestedApi))
+		if (RequestedApi == ESKRHIApi::Vulkan)
+		{
+			// The current Vulkan backend is a presentation/clear scaffold and records triangle
+			// draw requests without rasterizing them.  Treat it as unavailable for runtime
+			// scene rendering so CAD samples do not open a permanently blank viewport.
+			SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKRuntime: Vulkan solid-triangle path is not enabled; using a raster backend fallback.");
+		}
+		else if (TryInitRHI(RequestedApi))
 		{
 			return true;
 		}
@@ -161,9 +173,15 @@ namespace Skylark
 			return true;
 		}
 
-		if (RequestedApi != ESKRHIApi::Vulkan && TryInitRHI(ESKRHIApi::Vulkan))
+		if (RequestedApi == ESKRHIApi::Vulkan && TryInitRHI(ESKRHIApi::D3D12))
 		{
-			SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKRuntime: requested RHI init failed, using Vulkan fallback.");
+			SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKRuntime: Vulkan unavailable for solid CAD rendering, using D3D12 fallback.");
+			return true;
+		}
+
+		if (RequestedApi == ESKRHIApi::Vulkan && TryInitRHI(ESKRHIApi::D3D11))
+		{
+			SK_LOG(GLogSkylark, ESKLogVerbosity::Warning, "SKRuntime: Vulkan unavailable for solid CAD rendering, using D3D11 fallback.");
 			return true;
 		}
 
@@ -201,152 +219,8 @@ namespace Skylark
 		// SceneGraph (OSG-aligned)
 		SceneGraph = std::make_shared<FSKSceneGraph>();
 
-		// Minimal demo content (V8): create a small BIM-like multi-level instanced scene.
-		// - Register one cube geometry.
-		// - Create 4 levels, 2 categories per level, each as an InstanceNode.
-		{
-			FSKGeometryBuildSettings Build;
-			Build.bBuildWireframe = true;
-			Build.bBuildEdgeCategories = true;
-			Build.CreaseAngleDeg = 30.0f;
-
-			const uint64 CubeGeoKey = GeometryRegistry.RegisterMesh("DemoCube", SKMakeUnitCubeMesh(1), Build);
-
-			// V9 demo: CAE field data (scalar + displacement) bound to cube geometry.
-			{
-				const FSKGeometryData* Geo = GeometryRegistry.Find(CubeGeoKey);
-				if (Geo)
-				{
-					// Flatten vertex count
-					uint32 TotalV = 0;
-					for (const auto& Sec : Geo->Mesh.Sections) { TotalV += (uint32)Sec.Vertices.size(); }
-
-					TArray<float> Stress;
-					Stress.resize(TotalV);
-
-					TArray<FSKVector3f> Disp;
-					Disp.resize(TotalV);
-
-					uint32 Base = 0;
-					for (const auto& Sec : Geo->Mesh.Sections)
-					{
-						for (SIZE_T i = 0; i < Sec.Vertices.size(); ++i)
-						{
-							const auto& P = Sec.Vertices[i].Position;
-							const float s = (P.Z + 0.5f) * 100.0f;
-							Stress[Base + (uint32)i] = s;
-
-							// Small sinusoidal displacement in Z
-							Disp[Base + (uint32)i] = FSKVector3f(0.0f, 0.0f, 0.05f * std::sin(P.X * 6.0f) * std::cos(P.Y * 6.0f));
-						}
-						Base += (uint32)Sec.Vertices.size();
-					}
-
-					auto& FS = FieldRegistry.GetOrCreateFieldSet(CubeGeoKey);
-
-					FSKFieldKey KStress;
-					KStress.Name = "Stress";
-					KStress.Domain = ESKFieldDomain::Vertex;
-					KStress.Type = ESKFieldValueType::Scalar;
-
-					FSKFieldStats SStat;
-					SStat.MinValue = 0.0f;
-					SStat.MaxValue = 100.0f;
-					SStat.bHasRange = true;
-
-					FS.RegisterScalar(KStress, std::move(Stress), SStat);
-
-					FSKFieldKey KDisp;
-					KDisp.Name = "Displacement";
-					KDisp.Domain = ESKFieldDomain::Vertex;
-					KDisp.Type = ESKFieldValueType::Vector3;
-
-					FS.RegisterVector(KDisp, std::move(Disp), {});
-				}
-			}
-
-			// V9 demo: one leader annotation (placeholder, line-only).
-			{
-				FSKAnnotation A;
-				A.Text = "Demo Note";
-				A.WorldA = FSKVector3f(0.0f, 0.0f, 0.0f);
-				A.WorldB = FSKVector3f(2.0f, 2.0f, 0.0f);
-				A.Style.ColorRGBA8 = 0xFF202020u;
-				A.Style.LineWidth = 2.0f;
-				AnnotationManager.Add(A);
-			}
-
-			// Category bits (IFC-like): 0=Wall, 1=Door
-			constexpr uint64 CatWall = 1ull << 0;
-			constexpr uint64 CatDoor = 1ull << 1;
-
-			FSKGuid DocGuid;
-			DocGuid.A = 0x11111111u;
-			DocGuid.B = 0x22222222u;
-
-			uint32 HitId = 1;
-
-			for (uint32 Level = 0; Level < 4; ++Level)
-			{
-				const uint64 LevelMask = 1ull << Level;
-				auto LevelNode = std::make_shared<FSKNode>("Level" + std::to_string(Level));
-				LevelNode->SetLevelMask(LevelMask);
-				LevelNode->SetCategoryMask(~0ull);
-				LevelNode->SetSystemMask(~0ull);
-
-				// Two categories
-				auto Walls = std::make_shared<FSKInstanceNode>("Walls");
-				Walls->SetGeometryKey(CubeGeoKey);
-				Walls->SetCategoryMask(CatWall);
-				Walls->SetLevelMask(LevelMask);
-
-				auto Doors = std::make_shared<FSKInstanceNode>("Doors");
-				Doors->SetGeometryKey(CubeGeoKey);
-				Doors->SetCategoryMask(CatDoor);
-				Doors->SetLevelMask(LevelMask);
-
-				// Build a grid per level
-				const int Grid = 20;
-				const float Spacing = 2.0f;
-				const float BaseZ = (float)Level * 3.0f;
-
-				for (int y = 0; y < Grid; ++y)
-				{
-					for (int x = 0; x < Grid; ++x)
-					{
-						const float Tx = (float)x * Spacing;
-						const float Ty = (float)y * Spacing;
-						const float Tz = BaseZ;
-
-						FSKObjectId O;
-						O.DocumentGuid = DocGuid;
-						O.ObjectGuid.A = (uint64)Level * 100000ull + (uint64)y * 1000ull + (uint64)x;
-						O.ObjectGuid.B = O.ObjectGuid.A ^ 0xA5A5A5A5A5A5A5A5ull;
-						O.SubId = 0;
-						O.Type = ESKObjectEntityType::Element;
-
-						const FSKMatrix4f LT = FSKMatrix4f::Translation(Tx, Ty, Tz);
-						const uint32 ThisHit = ++HitId;
-
-						// Split instances between walls/doors (simple pattern)
-						if (((x + y) & 7) == 0)
-						{
-							Doors->AddInstance(LT, ThisHit, O);
-						}
-						else
-						{
-							Walls->AddInstance(LT, ThisHit, O);
-						}
-					}
-				}
-
-				LevelNode->AddChild(Walls);
-				LevelNode->AddChild(Doors);
-				SceneGraph->GetRoot()->AddChild(LevelNode);
-			}
-
-			SceneGraph->RebuildIndex();
-		}
+		// Runtime starts with an empty scene. Test applications or product hosts are responsible
+		// for importing geometry, populating the scene graph, and configuring view state.
 
 		Pipeline = SKCreateDefaultPipeline();
 

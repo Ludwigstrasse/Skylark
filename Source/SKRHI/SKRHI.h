@@ -2,6 +2,7 @@
 
 #include "SKCore/SKCoreMinimal.h"
 #include "SKPlatform/SKPlatform.h"
+#include <memory>
 
 namespace Skylark
 {
@@ -167,6 +168,112 @@ namespace Skylark
 		float PatternScale = 1.0f;
 	};
 
+
+	// ---- Triangle rendering (P12 cross-backend parity) ----
+	struct FSKRHITriangleVertex
+	{
+		// Object/local position by default. When bApplyTransform is false, this can also be clip-space.
+		float X = 0.0f;
+		float Y = 0.0f;
+		float Z = 0.0f;
+		float W = 1.0f;
+
+		// Packed RGBA8 (R in lowest byte). Matches SKPackRGBA8.
+		uint32 ColorRGBA8 = 0xFFFFFFFFu;
+	};
+
+	struct FSKRHITriangleInstance
+	{
+		FSKMatrix4f LocalToWorld = FSKMatrix4f::Identity();
+		uint32 TintRGBA8 = 0xFFFFFFFFu;
+	};
+
+	struct FSKRHITriangleDrawParams
+	{
+		bool bDepthTest = true;
+		bool bDepthWrite = true;
+		bool bCullBackFace = false;
+		bool bAlphaBlend = false;
+
+		// When true, backend transforms the input vertices by Transform before rasterization.
+		bool bApplyTransform = false;
+		FSKMatrix4f Transform = FSKMatrix4f::Identity();
+	};
+
+struct FSKRHIResidentTriangleVertex
+{
+    float PX = 0.0f;
+    float PY = 0.0f;
+    float PZ = 0.0f;
+    float NX = 0.0f;
+    float NY = 0.0f;
+    float NZ = 1.0f;
+    uint32 ColorRGBA8 = 0xFFFFFFFFu;
+};
+
+struct FSKRHIResidentTriangleBufferDesc
+{
+    const FSKRHIResidentTriangleVertex* Vertices = nullptr;
+    uint32 VertexCount = 0;
+    const uint32* Indices = nullptr;
+    uint32 IndexCount = 0;
+    const char* DebugName = nullptr;
+};
+
+class ISKRHIResidentTriangleBuffer
+{
+public:
+    virtual ~ISKRHIResidentTriangleBuffer() = default;
+    virtual uint32 GetVertexCount() const = 0;
+    virtual uint32 GetIndexCount() const = 0;
+};
+
+struct FSKRHIResidentTriangleDrawParams
+{
+    FSKMatrix4f LocalToWorld = FSKMatrix4f::Identity();
+    FSKMatrix4f View = FSKMatrix4f::Identity();
+    FSKMatrix4f Projection = FSKMatrix4f::Identity();
+    bool bDepthTest = true;
+    bool bDepthWrite = true;
+    bool bCullBackFace = false;
+    bool bAlphaBlend = false;
+    bool bUseOverrideColor = false;
+    uint32 OverrideColorRGBA8 = 0xFFFFFFFFu;
+};
+
+struct FSKRHIResidentLineVertex
+{
+    float PX = 0.0f;
+    float PY = 0.0f;
+    float PZ = 0.0f;
+    uint32 ColorRGBA8 = 0xFFFFFFFFu;
+};
+
+struct FSKRHIResidentLineBufferDesc
+{
+    const FSKRHIResidentLineVertex* Vertices = nullptr;
+    uint32 VertexCount = 0;
+    const char* DebugName = nullptr;
+};
+
+class ISKRHIResidentLineBuffer
+{
+public:
+    virtual ~ISKRHIResidentLineBuffer() = default;
+    virtual uint32 GetVertexCount() const = 0;
+};
+
+struct FSKRHIResidentLineDrawParams
+{
+    FSKMatrix4f LocalToWorld = FSKMatrix4f::Identity();
+    FSKMatrix4f View = FSKMatrix4f::Identity();
+    FSKMatrix4f Projection = FSKMatrix4f::Identity();
+    bool bDepthTest = true;
+    float Width = 1.0f;
+    bool bUseOverrideColor = false;
+    uint32 OverrideColorRGBA8 = 0xFFFFFFFFu;
+};
+
 class ISKRHICommandList
 	{
 	public:
@@ -194,6 +301,39 @@ class ISKRHICommandList
 
 		// Draw line list (pairs of vertices). Used by CAD edges / HLR / overlays.
 		virtual void DrawLineList(const FSKRHILineVertex* Vertices, uint32 VertexCount, const FSKRHILineDrawParams& Params) = 0;
+
+		// Cross-backend triangle surface. D3D11 / OpenGL / Vulkan may provide backend-specific implementations.
+		virtual void DrawTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const FSKRHITriangleDrawParams& Params)
+		{
+			(void)Vertices; (void)VertexCount; (void)Params;
+		}
+		virtual void DrawIndexedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleDrawParams& Params)
+		{
+			(void)Vertices; (void)VertexCount; (void)Indices; (void)IndexCount; (void)Params;
+		}
+		virtual void DrawIndexedInstancedTriangleList(const FSKRHITriangleVertex* Vertices, uint32 VertexCount, const uint32* Indices, uint32 IndexCount, const FSKRHITriangleInstance* Instances, uint32 InstanceCount, const FSKRHITriangleDrawParams& Params)
+		{
+			(void)Vertices; (void)VertexCount; (void)Indices; (void)IndexCount; (void)Instances; (void)InstanceCount; (void)Params;
+		}
+
+		virtual std::unique_ptr<ISKRHIResidentTriangleBuffer> CreateResidentTriangleBuffer(const FSKRHIResidentTriangleBufferDesc& Desc)
+		{
+			(void)Desc;
+			return {};
+		}
+		virtual std::unique_ptr<ISKRHIResidentLineBuffer> CreateResidentLineBuffer(const FSKRHIResidentLineBufferDesc& Desc)
+		{
+			(void)Desc;
+			return {};
+		}
+		virtual void DrawResidentTriangleBuffer(const ISKRHIResidentTriangleBuffer& Buffer, const FSKRHIResidentTriangleDrawParams& Params)
+		{
+			(void)Buffer; (void)Params;
+		}
+		virtual void DrawResidentLineBuffer(const ISKRHIResidentLineBuffer& Buffer, const FSKRHIResidentLineDrawParams& Params)
+		{
+			(void)Buffer; (void)Params;
+		}
 
 		virtual void Flush() = 0;
 	};

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstring>
 #include <set>
+#include <unordered_map>
 
 namespace Skylark::CadSceneTest
 {
@@ -135,6 +136,7 @@ namespace Skylark::CadSceneTest
         return MakeVec3(V.X / Length, V.Y / Length, V.Z / Length);
     }
 
+
     bool LoadCadSceneDocument(const char* pFilename, FSkCadSceneDocument& OutDocument, FSKString& OutError)
     {
         OutDocument = {};
@@ -193,42 +195,63 @@ namespace Skylark::CadSceneTest
                 const CSFGeometryPart& Part = Geometry.parts[PartIndex];
                 FSKMeshSection Section{};
                 Section.OwnerId.LegacyValue = static_cast<uint64>((static_cast<uint64>(GeometryIndex) << 32) | static_cast<uint32>(PartIndex));
-                Section.Vertices.reserve(static_cast<SIZE_T>(Geometry.numVertices));
-                for (int32 VertexIndex = 0; VertexIndex < Geometry.numVertices; ++VertexIndex)
-                {
-                    FSKVertex Vertex{};
-                    Vertex.Position = FSKVector3f(
-                        Geometry.vertex[VertexIndex * 3 + 0],
-                        Geometry.vertex[VertexIndex * 3 + 1],
-                        Geometry.vertex[VertexIndex * 3 + 2]);
 
-                    if (Geometry.normal)
+                std::unordered_map<uint32, uint32> VertexRemap;
+                VertexRemap.reserve(static_cast<SIZE_T>(Part.indexSolid));
+                Section.Vertices.reserve(static_cast<SIZE_T>(Part.indexSolid));
+                Section.Indices.reserve(static_cast<SIZE_T>(Part.indexSolid));
+
+                for (int32 LocalIndex = 0; LocalIndex < Part.indexSolid; ++LocalIndex)
+                {
+                    const uint32 SourceIndex = Geometry.indexSolid[SolidIndexOffset + LocalIndex];
+                    auto RemapIt = VertexRemap.find(SourceIndex);
+                    uint32 DestIndex = 0;
+                    if (RemapIt == VertexRemap.end())
                     {
-                        Vertex.Normal = FSKVector3f(
-                            Geometry.normal[VertexIndex * 3 + 0],
-                            Geometry.normal[VertexIndex * 3 + 1],
-                            Geometry.normal[VertexIndex * 3 + 2]);
+                        DestIndex = static_cast<uint32>(Section.Vertices.size());
+                        VertexRemap.emplace(SourceIndex, DestIndex);
+
+                        FSKVertex Vertex{};
+                        Vertex.Position = FSKVector3f(
+                            Geometry.vertex[SourceIndex * 3 + 0],
+                            Geometry.vertex[SourceIndex * 3 + 1],
+                            Geometry.vertex[SourceIndex * 3 + 2]);
+
+                        if (Geometry.normal)
+                        {
+                            Vertex.Normal = FSKVector3f(
+                                Geometry.normal[SourceIndex * 3 + 0],
+                                Geometry.normal[SourceIndex * 3 + 1],
+                                Geometry.normal[SourceIndex * 3 + 2]);
+                        }
+                        else
+                        {
+                            Vertex.Normal = FSKVector3f(0.0f, 0.0f, 1.0f);
+                        }
+                        Section.Vertices.push_back(Vertex);
                     }
                     else
                     {
-                        Vertex.Normal = FSKVector3f(0.0f, 0.0f, 1.0f);
+                        DestIndex = RemapIt->second;
                     }
-                    Section.Vertices.push_back(Vertex);
-                }
 
-                Section.Indices.reserve(static_cast<SIZE_T>(Part.indexSolid));
-                for (int32 LocalIndex = 0; LocalIndex < Part.indexSolid; ++LocalIndex)
-                {
-                    Section.Indices.push_back(Geometry.indexSolid[SolidIndexOffset + LocalIndex]);
+                    Section.Indices.push_back(DestIndex);
                 }
                 SolidIndexOffset += Part.indexSolid;
                 Mesh.Sections.push_back(std::move(Section));
             }
 
+            const FSKGeometryBuildSettings BuildSettings{
+                true,
+                true,
+                35.0f,
+                false
+            };
+
             const uint64 GeometryKey = OutDocument.GeometryRegistry.RegisterMesh(
                 "CSFGeometry_" + std::to_string(GeometryIndex),
                 Mesh,
-                FSKGeometryBuildSettings{}
+                BuildSettings
             );
             GeometryKeys[static_cast<SIZE_T>(GeometryIndex)] = GeometryKey;
             OutDocument.GeometryKeys.push_back(GeometryKey);
@@ -237,6 +260,29 @@ namespace Skylark::CadSceneTest
                 GeometryBounds[static_cast<SIZE_T>(GeometryIndex)] = pGeometryData->Bounds;
             }
         }
+
+        auto ExpandBoundsByTransformedAabb = [](FAppVec3& InOutMin, FAppVec3& InOutMax, const FAppMat4& World, const FSKAabb& LocalAabb)
+        {
+            const FAppVec3 LocalMin = MakeVec3(LocalAabb.Min.X, LocalAabb.Min.Y, LocalAabb.Min.Z);
+            const FAppVec3 LocalMax = MakeVec3(LocalAabb.Max.X, LocalAabb.Max.Y, LocalAabb.Max.Z);
+
+            const FAppVec3 Corners[8] =
+            {
+                MakeVec3(LocalMin.X, LocalMin.Y, LocalMin.Z),
+                MakeVec3(LocalMax.X, LocalMin.Y, LocalMin.Z),
+                MakeVec3(LocalMin.X, LocalMax.Y, LocalMin.Z),
+                MakeVec3(LocalMax.X, LocalMax.Y, LocalMin.Z),
+                MakeVec3(LocalMin.X, LocalMin.Y, LocalMax.Z),
+                MakeVec3(LocalMax.X, LocalMin.Y, LocalMax.Z),
+                MakeVec3(LocalMin.X, LocalMax.Y, LocalMax.Z),
+                MakeVec3(LocalMax.X, LocalMax.Y, LocalMax.Z),
+            };
+
+            for (const FAppVec3& Corner : Corners)
+            {
+                ExpandBounds(InOutMin, InOutMax, TransformPoint(World, Corner));
+            }
+        };
 
         uint32 StableIdCounter = 1;
         for (int32 NodeIndex = 0; NodeIndex < pFile->numNodes; ++NodeIndex)
@@ -274,7 +320,7 @@ namespace Skylark::CadSceneTest
                 DrawItem.BoundsCenter = TransformPoint(DrawItem.WorldMatrix, LocalCenter);
                 DrawItem.StableId = StableIdCounter++;
                 OutDocument.DrawItems.push_back(DrawItem);
-                ExpandBounds(OutDocument.SceneMin, OutDocument.SceneMax, DrawItem.BoundsCenter);
+                ExpandBoundsByTransformedAabb(OutDocument.SceneMin, OutDocument.SceneMax, DrawItem.WorldMatrix, GeometryAabb);
             }
         }
 

@@ -3,6 +3,8 @@
 #include "SKLineRender/SKLineRender.h"
 #include "SKFieldViz/SKFieldViz.h"
 #include "SKAnnotation/SKAnnotation.h"
+#include "SKRenderer/SKTriangleSceneRenderer.h"
+#include "SKRenderer/SKSelectionOverlayRenderer.h"
 
 #include <algorithm>
 
@@ -43,33 +45,41 @@ namespace Skylark
 
 	void FSKBasePass::AddToGraph(FSKRenderGraphBuilder& Graph, ISKViewport& Viewport, const FSKViewInfo& View)
 	{
-		(void)View;
-
-		// RDG-Min: SceneColor is a frame-local render target.
-		const auto SceneColorDesc = SKMakeViewportTextureDesc(Viewport, ESKRHIFormat::R8G8B8A8_UNORM, (uint32)(SK_Tex_RenderTarget));
-		const auto SceneColor = Graph.GetOrCreateTexture("SceneColor", SceneColorDesc);
+		ISKViewport* VPPtr = &Viewport;
 
 		Graph.AddPass(GetName(),
-			[SceneColor](FSKRGPassBuilder& B)
+			[](FSKRGPassBuilder& B)
 			{
-				B.WriteTexture(SceneColor);
+				(void)B;
 			},
-			[SceneColor](const FSKRGPassContext& Ctx)
+			[VPPtr, View](const FSKRGPassContext& Ctx)
 			{
-				if (!Ctx.Cmd)
+				if (!Ctx.Cmd || !Ctx.SwapChain)
 				{
 					return;
 				}
 
-				ISKRHITexture2D* RT = Ctx.GetTexture(SceneColor);
-				if (!RT)
-				{
-					return;
-				}
-
-				Ctx.Cmd->SetRenderTargetTexture(*RT);
+				Ctx.Cmd->SetSwapChainRenderTarget(*Ctx.SwapChain);
 				Ctx.Cmd->ClearRenderTarget(SKCreoBg());
-				Ctx.Cmd->Flush();
+
+				if (View.ViewMode == ESKViewMode::Wireframe || View.ViewMode == ESKViewMode::HiddenLine)
+				{
+					Ctx.Cmd->Flush();
+					return;
+				}
+
+				auto* VP_SV = dynamic_cast<ISKViewportSceneView*>(VPPtr);
+				const FSKSceneView* SV = VP_SV ? VP_SV->GetSceneView() : nullptr;
+				if (!SV)
+				{
+					Ctx.Cmd->Flush();
+					return;
+				}
+
+				FSKTriangleSceneBuildInput Input;
+				Input.SceneView = SV;
+				Input.View = &View;
+				FSKTriangleSceneRenderer::DrawSolidScene(*Ctx.Cmd, Input);
 			});
 	}
 
@@ -123,10 +133,8 @@ namespace Skylark
 
 	void FSKSelectionPass::AddToGraph(FSKRenderGraphBuilder& Graph, ISKViewport& Viewport, const FSKViewInfo& View)
 	{
-		(void)View;
-			ISKViewport* VPPtr = &Viewport;
+		ISKViewport* VPPtr = &Viewport;
 
-		// Selection buffer is viewport-persistent (readback on demand).
 		auto* VP_Sel = dynamic_cast<ISKViewportSelectionRHI*>(&Viewport);
 		if (!VP_Sel)
 		{
@@ -140,12 +148,12 @@ namespace Skylark
 
 		const auto SelectionId = Graph.RegisterExternalTexture("SelectionId", *SelTex);
 
-			Graph.AddPass(GetName(),
+		Graph.AddPass(GetName(),
 			[SelectionId](FSKRGPassBuilder& B)
 			{
 				B.WriteTexture(SelectionId);
 			},
-			[SelectionId, VPPtr](const FSKRGPassContext& Ctx)
+			[SelectionId, VPPtr, View](const FSKRGPassContext& Ctx)
 			{
 				if (!Ctx.Cmd)
 				{
@@ -162,28 +170,20 @@ namespace Skylark
 
 				FSKRHIClearColor Clear;
 				Clear.R = 0.0f; Clear.G = 0.0f; Clear.B = 0.0f; Clear.A = 0.0f;
-				
 				Ctx.Cmd->ClearRenderTarget(Clear);
 
-				// V9: draw hit-proxy id edges into selection buffer (line-based id buffer).
 				auto* VP_SV = dynamic_cast<ISKViewportSceneView*>(VPPtr);
 				const FSKSceneView* SV = VP_SV ? VP_SV->GetSceneView() : nullptr;
-				auto* VP_View = dynamic_cast<ISKViewportView*>(VPPtr);
-				const FSKViewInfo* VI = VP_View ? &VP_View->GetViewInfo() : nullptr;
-				if (SV && VI)
+				if (!SV)
 				{
-					FSKLineBuildInput Input;
-					Input.SceneView = SV;
-					Input.View = VI;
-					Input.EdgeSettings = VI->EdgeSettings;
-					Input.VisibleStyle = VI->VisibleLineStyle;
-					Input.HiddenStyle = VI->HiddenLineStyle;
-					FSKLineRenderer::DrawEdgesForHitProxies(*Ctx.Cmd, Input);
+					Ctx.Cmd->Flush();
+					return;
 				}
 
-				Ctx.Cmd->Flush();
-
-				// TODO: draw face/solid hit-proxy ids (requires triangle pipeline)
+				FSKTriangleSceneBuildInput Input;
+				Input.SceneView = SV;
+				Input.View = &View;
+				FSKTriangleSceneRenderer::DrawSelectionScene(*Ctx.Cmd, Input);
 			});
 	}
 
@@ -198,6 +198,36 @@ namespace Skylark
 			{
 				(void)Ctx;
 				// TODO(CAE): scalar field colormap, deform, glyphs, isolines
+			});
+	}
+
+	void FSKSelectionOverlayPass::AddToGraph(FSKRenderGraphBuilder& Graph, ISKViewport& Viewport, const FSKViewInfo& View)
+	{
+		ISKViewport* VPPtr = &Viewport;
+
+		Graph.AddPass(GetName(),
+			[](FSKRGPassBuilder& B)
+			{
+				(void)B;
+			},
+			[VPPtr, View](const FSKRGPassContext& Ctx)
+			{
+				if (!Ctx.Cmd || !Ctx.SwapChain)
+				{
+					return;
+				}
+
+				Ctx.Cmd->SetSwapChainRenderTarget(*Ctx.SwapChain);
+
+				auto* VP_SV = dynamic_cast<ISKViewportSceneView*>(VPPtr);
+				const FSKSceneView* SV = VP_SV ? VP_SV->GetSceneView() : nullptr;
+				if (!SV)
+				{
+					Ctx.Cmd->Flush();
+					return;
+				}
+
+				FSKSelectionOverlayRenderer::DrawSelectionOverlay(*Ctx.Cmd, *SV, View);
 			});
 	}
 
@@ -228,9 +258,9 @@ namespace Skylark
 					return;
 				}
 
-				// V7: render overlays directly into the swapchain target.
+				// BasePass already rendered the solid scene into the swapchain.
+				// PostProcess only adds overlays and does not clear the back buffer again.
 				Ctx.Cmd->SetSwapChainRenderTarget(*Ctx.SwapChain);
-				Ctx.Cmd->ClearRenderTarget(SKCreoBg());
 
 				if (!bWantEdges && !bWantHidden)
 				{

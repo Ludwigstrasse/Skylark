@@ -15,6 +15,7 @@ namespace Skylark
 	 *   3) optional surface + swapchain + present path bootstrap (Win32 path wired; other platforms stay headless)
 	 *   4) internal shader/pipeline scaffolds for the future public RHI shader interface
 	 *   5) preserved compatibility with Skylark's unified RHI selection / recreation architecture
+ *   6) first public triangle-draw command-surface parity with D3D11 / OpenGL (record/scaffold path in this version)
 	 *
 	 * Important boundary:
 	 * - This version establishes the Vulkan presentation architecture and first pipeline scaffolding,
