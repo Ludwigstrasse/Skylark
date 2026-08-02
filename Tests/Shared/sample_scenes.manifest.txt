@@ -1,0 +1,3 @@
+# Sample manifest for Skylark scene apps
+Engine Cover|../SkylarkCadSceneTechniques/Assets/geforce.csf.gz
+Original Sample|../SkylarkCadSceneTechniques/ThirdParty/original_sample/geforce.csf.gz

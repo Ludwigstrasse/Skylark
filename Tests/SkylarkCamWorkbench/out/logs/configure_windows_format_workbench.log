@@ -1,0 +1,415 @@
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- The CXX compiler identification is MSVC 19.41.34123.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.41.34120/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (43.6s)
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKCore/SKCore.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:141 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKLWC/SKLWC.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:142 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKProfiler/SKProfiler.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:143 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKGeometry/SKGeometryRegistry.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:144 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKField/SKField.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:145 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKPlatform/SKPlatform.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:146 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKScene/SKScene.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:153 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKRHI/SKRHIFactory.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:154 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKRenderGraph/SKRenderGraph.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:155 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKAnnotation/SKAnnotation.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:156 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKCAD/SKCadImporter.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:157 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKInteraction/SKInteraction.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:158 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKBIM/SKBIM.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:159 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKCAE/SKCAE.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:160 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKStreaming/SKStreaming.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:161 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKRenderThread/SKRenderThread.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:162 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKLineRender/SKLineRender.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:163 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKFieldViz/SKFieldViz.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:164 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKRenderer/SKRenderer.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:165 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKShaderCore/SKShaderCore.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:185 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKShaderCompiler/SKShaderCompiler.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:186 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKPipelineCache/SKPipelineCache.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:187 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKHZB/SKHZB.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:188 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKGpuCulling/SKGpuCulling.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:189 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKMeasurement/SKMeasurement.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:190 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKPMI/SKPMI.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:191 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKTaskGraph/SKTaskGraph.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:192 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKRuntime/SKRuntimeEngine.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:193 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  Cannot find source file:
+
+    Source/SKEngine/SKEngine.cpp
+Call Stack (most recent call first):
+  CMakeLists.txt:194 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKCore
+Call Stack (most recent call first):
+  CMakeLists.txt:141 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKLWC
+Call Stack (most recent call first):
+  CMakeLists.txt:142 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKProfiler
+Call Stack (most recent call first):
+  CMakeLists.txt:143 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKGeometry
+Call Stack (most recent call first):
+  CMakeLists.txt:144 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKField
+Call Stack (most recent call first):
+  CMakeLists.txt:145 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKPlatform
+Call Stack (most recent call first):
+  CMakeLists.txt:146 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKScene
+Call Stack (most recent call first):
+  CMakeLists.txt:153 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKRHI
+Call Stack (most recent call first):
+  CMakeLists.txt:154 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKRenderGraph
+Call Stack (most recent call first):
+  CMakeLists.txt:155 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKAnnotation
+Call Stack (most recent call first):
+  CMakeLists.txt:156 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKCAD
+Call Stack (most recent call first):
+  CMakeLists.txt:157 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKInteraction
+Call Stack (most recent call first):
+  CMakeLists.txt:158 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKBIM
+Call Stack (most recent call first):
+  CMakeLists.txt:159 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKCAE
+Call Stack (most recent call first):
+  CMakeLists.txt:160 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKStreaming
+Call Stack (most recent call first):
+  CMakeLists.txt:161 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKRenderThread
+Call Stack (most recent call first):
+  CMakeLists.txt:162 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKLineRender
+Call Stack (most recent call first):
+  CMakeLists.txt:163 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKFieldViz
+Call Stack (most recent call first):
+  CMakeLists.txt:164 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKRenderer
+Call Stack (most recent call first):
+  CMakeLists.txt:165 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKShaderCore
+Call Stack (most recent call first):
+  CMakeLists.txt:185 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKShaderCompiler
+Call Stack (most recent call first):
+  CMakeLists.txt:186 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKPipelineCache
+Call Stack (most recent call first):
+  CMakeLists.txt:187 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKHZB
+Call Stack (most recent call first):
+  CMakeLists.txt:188 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKGpuCulling
+Call Stack (most recent call first):
+  CMakeLists.txt:189 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKMeasurement
+Call Stack (most recent call first):
+  CMakeLists.txt:190 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKPMI
+Call Stack (most recent call first):
+  CMakeLists.txt:191 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKTaskGraph
+Call Stack (most recent call first):
+  CMakeLists.txt:192 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKRuntime
+Call Stack (most recent call first):
+  CMakeLists.txt:193 (sk_add_module)
+
+
+CMake Error at CMakeLists.txt:81 (add_library):
+  No SOURCES given to target: SKEngine
+Call Stack (most recent call first):
+  CMakeLists.txt:194 (sk_add_module)
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

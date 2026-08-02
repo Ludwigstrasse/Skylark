@@ -1,0 +1,24 @@
+Command:
+  bash Scripts/Linux/Build/Build_Linux_SkylarkVolumeStudio_Debug.sh
+
+Configure:
+  -- Configuring done
+  -- Generating done
+  -- Build files have been written to: out/build/linux-volumestudio-debug
+
+Build target:
+  SkylarkVolumeStudioValidation
+
+Build summary:
+  [22/22] Linking CXX executable Tests/SkylarkVolumeStudio/SkylarkVolumeStudioValidation
+
+Validation output:
+  [OK] SkylarkVolumeStudio validation passed.
+  Loaded triangles: 12
+  Surface mesh bytes: 432
+  Voxel dims: 12 x 12 x 12
+  Boundary cells: 784
+  Solid cells: 280
+  Hex nodes: 1427
+  Hex cells: 1064
+  Preview vertices: 36
